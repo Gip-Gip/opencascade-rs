@@ -32,6 +32,7 @@ const OCCT_LIBS: &[&str] = &[
 ];
 
 fn main() {
+    unsafe { std::env::set_var("RUST_LOGCMAKE_POLICY_VERSION_MINIMUM", "3.5") };
     let target = std::env::var("TARGET").expect("No TARGET environment variable defined");
     let is_windows = target.to_lowercase().contains("windows");
     let is_windows_gnu = target.to_lowercase().contains("windows-gnu");
