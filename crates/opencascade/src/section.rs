@@ -36,11 +36,11 @@ pub fn edges(target: &Shape, tool: &Shape) -> Vec<Shape> {
 #[cfg(test)]
 mod test {
     use super::*;
+    use nalgebra::point;
     use crate::{
         primitives::{IntoShape, ShapeType},
         workplane::Workplane,
     };
-    use glam::dvec3;
 
     #[test]
     fn section_new() {
@@ -58,7 +58,7 @@ mod test {
 
         let e = s.edges().next().expect("There should be only one edge");
 
-        assert_eq!(e.start_point(), dvec3(0.0, -0.5, 0.0));
-        assert_eq!(e.end_point(), dvec3(0.0, 0.5, 0.0));
+        assert_eq!(e.start_point(), point![0.0, -0.5, 0.0]);
+        assert_eq!(e.end_point(), point![0.0, 0.5, 0.0]);
     }
 }

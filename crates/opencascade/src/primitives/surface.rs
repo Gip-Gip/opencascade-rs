@@ -1,6 +1,6 @@
 use crate::primitives::make_point;
 use cxx::UniquePtr;
-use glam::DVec3;
+use nalgebra::{Point3};
 use opencascade_sys::ffi;
 
 pub struct Surface {
@@ -8,7 +8,7 @@ pub struct Surface {
 }
 
 impl Surface {
-    pub fn bezier(poles: impl IntoIterator<Item = impl IntoIterator<Item = DVec3>>) -> Self {
+    pub fn bezier(poles: impl IntoIterator<Item = impl IntoIterator<Item = Point3<f64>>>) -> Self {
         let poles: Vec<Vec<_>> =
             poles.into_iter().map(|poles| poles.into_iter().collect()).collect();
 

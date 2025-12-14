@@ -1,5 +1,5 @@
 use cxx::UniquePtr;
-use glam::DVec3;
+use nalgebra::{Point3, Vector3, point, vector};
 use opencascade_sys::ffi;
 
 use crate::primitives::Shape;
@@ -25,19 +25,19 @@ impl BoundingBox {
         self.inner.GetGap()
     }
 
-    pub fn min(&self) -> DVec3 {
+    pub fn min(&self) -> Point3<f64> {
         let p = ffi::Bnd_Box_CornerMin(self.inner.as_ref().unwrap());
-        glam::dvec3(p.X(), p.Y(), p.Z())
+        point![p.X(), p.Y(), p.Z()]
     }
 
-    pub fn max(&self) -> DVec3 {
+    pub fn max(&self) -> Point3<f64> {
         let p = ffi::Bnd_Box_CornerMax(self.inner.as_ref().unwrap());
-        glam::dvec3(p.X(), p.Y(), p.Z())
+        point![p.X(), p.Y(), p.Z()]
     }
 
     /// Get a vector corresponding to the `gap` of this box in all dimensions.
-    pub fn gap_vec(&self) -> DVec3 {
-        glam::DVec3::ONE * self.get_gap()
+    pub fn gap_vec(&self) -> Vector3<f64> {
+        vector![1.0, 1.0, 1.0] * self.get_gap()
     }
 }
 
@@ -69,17 +69,17 @@ mod test {
 
         let bb = aabb(&s);
 
-        assert_eq!(bb.min(), glam::dvec3(-1.0, -1.0, -1.0) - bb.gap_vec());
-        assert_eq!(bb.max(), glam::dvec3(1.0, 1.0, 1.0) + bb.gap_vec());
+        assert_eq!(bb.min(), point![-1.0, -1.0, -1.0] - bb.gap_vec());
+        assert_eq!(bb.max(), point![1.0, 1.0, 1.0] + bb.gap_vec());
     }
 
     #[test]
     fn get_bounding_box_of_sphere_transformed() {
-        let s = Shape::sphere(1.0).at(glam::dvec3(1.0, 2.0, 3.0)).build();
+        let s = Shape::sphere(1.0).at(point![1.0, 2.0, 3.0]).build();
 
         let bb = aabb(&s);
         let gap = bb.gap_vec();
-        assert_eq!(bb.min(), glam::dvec3(0.0, 1.0, 2.0) - gap);
-        assert_eq!(bb.max(), glam::dvec3(2.0, 3.0, 4.0) + gap);
+        assert_eq!(bb.min(), point![0.0, 1.0, 2.0] - gap);
+        assert_eq!(bb.max(), point![2.0, 3.0, 4.0] + gap);
     }
 }

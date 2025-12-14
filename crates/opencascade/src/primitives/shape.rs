@@ -7,9 +7,9 @@ use crate::{
     Error,
 };
 use cxx::UniquePtr;
-use glam::{dvec2, dvec3, DVec3};
+use nalgebra::{Point3, Vector3, point};
 use opencascade_sys::ffi;
-use std::path::Path;
+use std::{cmp::Ordering, path::Path};
 
 pub struct Shape {
     pub(crate) inner: UniquePtr<ffi::TopoDS_Shape>,
@@ -140,20 +140,20 @@ impl From<BooleanShape> for Shape {
 }
 
 pub struct SphereBuilder {
-    center: DVec3,
+    center: Point3<f64>,
     radius: f64,
     z_angle: f64,
 }
 
 impl SphereBuilder {
     pub fn build(self) -> Shape {
-        let axis = make_axis_2(self.center, DVec3::Z);
+        let axis = make_axis_2(self.center, Vector3::z());
         let mut make_shere = ffi::BRepPrimAPI_MakeSphere_ctor(&axis, self.radius, self.z_angle);
 
         Shape::from_shape(make_shere.pin_mut().Shape())
     }
 
-    pub fn at(mut self, center: DVec3) -> Self {
+    pub fn at(mut self, center: Point3<f64>) -> Self {
         self.center = center;
         self
     }
@@ -165,7 +165,7 @@ impl SphereBuilder {
 }
 
 pub struct ConeBuilder {
-    pos: DVec3,
+    pos: Point3<f64>,
     height: f64,
     bottom_radius: f64,
     top_radius: f64,
@@ -174,7 +174,7 @@ pub struct ConeBuilder {
 
 impl ConeBuilder {
     pub fn build(self) -> Shape {
-        let axis = make_axis_2(self.pos, DVec3::Z);
+        let axis = make_axis_2(self.pos, Vector3::z());
         let mut make_cone = ffi::BRepPrimAPI_MakeCone_ctor(
             &axis,
             self.bottom_radius,
@@ -186,7 +186,7 @@ impl ConeBuilder {
         Shape::from_shape(make_cone.pin_mut().Shape())
     }
 
-    pub fn at(mut self, pos: DVec3) -> Self {
+    pub fn at(mut self, pos: Point3<f64>) -> Self {
         self.pos = pos;
         self
     }
@@ -213,8 +213,8 @@ impl ConeBuilder {
 }
 
 pub struct TorusBuilder {
-    pos: DVec3,
-    z_axis: DVec3,
+    pos: Point3<f64>,
+    z_axis: Vector3<f64>,
     radius_1: f64,
     radius_2: f64,
     angle_1: f64,
@@ -237,12 +237,12 @@ impl TorusBuilder {
         Shape::from_shape(make_torus.pin_mut().Shape())
     }
 
-    pub fn at(mut self, pos: DVec3) -> Self {
+    pub fn at(mut self, pos: Point3<f64>) -> Self {
         self.pos = pos;
         self
     }
 
-    pub fn z_axis(mut self, z_axis: DVec3) -> Self {
+    pub fn z_axis(mut self, z_axis: Vector3<f64>) -> Self {
         self.z_axis = z_axis;
         self
     }
@@ -298,9 +298,11 @@ impl Shape {
 
     /// Make a box with one corner at corner_1, and the opposite corner
     /// at corner_2.
-    pub fn box_from_corners(corner_1: DVec3, corner_2: DVec3) -> Self {
-        let min_corner = corner_1.min(corner_2);
-        let max_corner = corner_1.max(corner_2);
+    pub fn box_from_corners(corner_1: Point3<f64>, corner_2: Point3<f64>) -> Self {
+        let (min_corner, max_corner) = match corner_1.partial_cmp(&corner_2).unwrap_or(Ordering::Equal) {
+            Ordering::Less | Ordering::Equal => (corner_1, corner_2),
+            Ordering::Greater => (corner_2, corner_1),
+        };
 
         let point = ffi::new_point(min_corner.x, min_corner.y, min_corner.z);
         let diff = max_corner - min_corner;
@@ -316,16 +318,16 @@ impl Shape {
         let half_depth = depth / 2.0;
         let half_height = height / 2.0;
 
-        let corner_1 = dvec3(-half_width, -half_depth, -half_height);
-        let corner_2 = dvec3(half_width, half_depth, half_height);
+        let corner_1 = point![-half_width, -half_depth, -half_height];
+        let corner_2 = point![half_width, half_depth, half_height];
         Self::box_from_corners(corner_1, corner_2)
     }
 
     /// Make a box with `width` (x), `depth` (y), and `height` (z)
     /// extending into the positive axes
     pub fn box_with_dimensions(width: f64, depth: f64, height: f64) -> Self {
-        let corner_1 = DVec3::ZERO;
-        let corner_2 = dvec3(width, depth, height);
+        let corner_1 = Point3::origin();
+        let corner_2 = point![width, depth, height];
         Self::box_from_corners(corner_1, corner_2)
     }
 
@@ -342,7 +344,7 @@ impl Shape {
 
     /// Make a cylinder with base at point `p`, radius `r`, and height `h`.
     /// Extends from `p` along axis `dir`.
-    pub fn cylinder(p: DVec3, r: f64, dir: DVec3, h: f64) -> Self {
+    pub fn cylinder(p: Point3<f64>, r: f64, dir: Vector3<f64>, h: f64) -> Self {
         let cylinder_coord_system = make_axis_2(p, dir);
         let mut cylinder = ffi::BRepPrimAPI_MakeCylinder_ctor(&cylinder_coord_system, r, h);
 
@@ -352,30 +354,30 @@ impl Shape {
     /// Make a "default" cylinder with radius `r` and height `h`.
     /// The base is at the coordinate origin, and extends along the Z axis.
     pub fn cylinder_radius_height(r: f64, h: f64) -> Self {
-        Self::cylinder(DVec3::ZERO, r, DVec3::Z, h)
+        Self::cylinder(Point3::origin(), r, Vector3::z(), h)
     }
 
     /// Make a cylinder from start point `p1` and end point `p2`,
     /// with radius `r`.
-    pub fn cylinder_from_points(p1: DVec3, p2: DVec3, r: f64) -> Self {
+    pub fn cylinder_from_points(p1: Point3<f64>, p2: Point3<f64>, r: f64) -> Self {
         let dir = p2 - p1;
-        Self::cylinder(p1, r, dir, dir.length())
+        Self::cylinder(p1, r, dir, dir.magnitude())
     }
 
     /// Make a cylinder centered at point `p`, with radius `r`, and height `h`.
     /// Extends along axis `dir`.
-    pub fn cylinder_centered(p: DVec3, r: f64, dir: DVec3, h: f64) -> Self {
+    pub fn cylinder_centered(p: Point3<f64>, r: f64, dir: Vector3<f64>, h: f64) -> Self {
         let p = p - (dir.normalize() * (h / 2.0));
         Self::cylinder(p, r, dir, h)
     }
 
     pub fn sphere(radius: f64) -> SphereBuilder {
-        SphereBuilder { center: DVec3::ZERO, radius, z_angle: std::f64::consts::TAU }
+        SphereBuilder { center: Point3::origin(), radius, z_angle: std::f64::consts::TAU }
     }
 
     pub fn cone() -> ConeBuilder {
         ConeBuilder {
-            pos: DVec3::ZERO,
+            pos: Point3::origin(),
             height: 1.0,
             bottom_radius: 1.0,
             top_radius: 0.0,
@@ -385,8 +387,8 @@ impl Shape {
 
     pub fn torus() -> TorusBuilder {
         TorusBuilder {
-            pos: DVec3::ZERO,
-            z_axis: DVec3::Z,
+            pos: Point3::origin(),
+            z_axis: Vector3::z(),
             radius_1: 20.0,
             radius_2: 10.0,
             angle_1: -std::f64::consts::PI,
@@ -443,7 +445,7 @@ impl Shape {
         let mut array = ffi::TColgp_Array1OfPnt2d_ctor(1, radius_values.len() as i32);
 
         for (index, (t, radius)) in radius_values.into_iter().enumerate() {
-            array.pin_mut().SetValue(index as i32 + 1, &make_point2d(dvec2(t, radius)));
+            array.pin_mut().SetValue(index as i32 + 1, &make_point2d(point![t, radius]));
         }
 
         let mut make_fillet = ffi::BRepFilletAPI_MakeFillet_ctor(&self.inner);
@@ -637,7 +639,7 @@ impl Shape {
         Self::from_shape(upgrader.Shape())
     }
 
-    pub fn set_global_translation(&mut self, translation: DVec3) {
+    pub fn set_global_translation(&mut self, translation: Vector3<f64>) {
         let mut transform = ffi::new_transform();
         let translation_vec = make_vec(translation);
         transform.pin_mut().set_translation_vec(&translation_vec);
@@ -667,7 +669,7 @@ impl Shape {
     }
 
     // TODO(bschwind) - Convert the return type to an iterator.
-    pub fn faces_along_line(&self, line_origin: DVec3, line_dir: DVec3) -> Vec<LineFaceHitPoint> {
+    pub fn faces_along_line(&self, line_origin: Point3<f64>, line_dir: Vector3<f64>) -> Vec<LineFaceHitPoint> {
         let mut intersector = ffi::BRepIntCurveSurface_Inter_ctor();
         let tolerance = 0.0001;
         intersector.pin_mut().Init(
@@ -688,7 +690,7 @@ impl Shape {
                 t: intersector.W(),
                 u: intersector.U(),
                 v: intersector.V(),
-                point: dvec3(point.X(), point.Y(), point.Z()),
+                point: point![point.X(), point.Y(), point.Z()],
             });
 
             intersector.pin_mut().Next();
@@ -724,7 +726,7 @@ impl Shape {
     /// Drill a cylindrical hole along the line defined by point `p`
     /// and direction `dir`, with `radius`.
     #[must_use]
-    pub fn drill_hole(&self, p: DVec3, dir: DVec3, radius: f64) -> Self {
+    pub fn drill_hole(&self, p: Point3<f64>, dir: Vector3<f64>, radius: f64) -> Self {
         let hole_axis = make_axis_1(p, dir);
 
         let mut make_hole = ffi::BRepFeat_MakeCylindricalHole_ctor();
@@ -748,7 +750,7 @@ pub struct LineFaceHitPoint {
     /// The V parameter on the face
     pub v: f64,
     /// The intersection point
-    pub point: DVec3,
+    pub point: Point3<f64>,
 }
 
 pub struct ChamferMaker {

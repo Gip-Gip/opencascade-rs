@@ -1,4 +1,4 @@
-use glam::{dvec3, DVec3};
+use nalgebra::{vector, Vector3};
 use std::ops::{Div, Mul};
 
 #[derive(Debug, Copy, Clone)]
@@ -70,12 +70,12 @@ pub struct RVec {
 }
 
 impl RVec {
-    pub fn radians(&self) -> DVec3 {
-        dvec3(self.x.radians(), self.y.radians(), self.z.radians())
+    pub fn radians(&self) -> Vector3<f64> {
+        vector![self.x.radians(), self.y.radians(), self.z.radians()]
     }
 
-    pub fn degrees(&self) -> DVec3 {
-        dvec3(self.x.degrees(), self.y.degrees(), self.z.degrees())
+    pub fn degrees(&self) -> Vector3<f64> {
+        vector![self.x.degrees(), self.y.degrees(), self.z.degrees()]
     }
 
     pub fn x(x: Angle) -> Self {

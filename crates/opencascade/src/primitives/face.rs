@@ -8,7 +8,7 @@ use crate::{
     workplane::Workplane,
 };
 use cxx::UniquePtr;
-use glam::{dvec3, DVec3};
+use nalgebra::{Point3, UnitVector3, Vector3, point, vector};
 use opencascade_sys::ffi;
 
 pub struct Face {
@@ -48,7 +48,7 @@ impl Face {
     }
 
     #[must_use]
-    pub fn extrude(&self, dir: DVec3) -> Solid {
+    pub fn extrude(&self, dir: Vector3<f64>) -> Solid {
         let prism_vec = make_vec(dir);
 
         let copy = false;
@@ -109,7 +109,7 @@ impl Face {
     }
 
     #[must_use]
-    pub fn revolve(&self, origin: DVec3, axis: DVec3, angle: Option<Angle>) -> Solid {
+    pub fn revolve(&self, origin: Point3<f64>, axis: Vector3<f64>, angle: Option<Angle>) -> Solid {
         let revol_vec = make_axis_1(origin, axis);
 
         let angle = angle.map(Angle::radians).unwrap_or(std::f64::consts::PI * 2.0);
@@ -246,7 +246,7 @@ impl Face {
         EdgeIterator { explorer }
     }
 
-    pub fn center_of_mass(&self) -> DVec3 {
+    pub fn center_of_mass(&self) -> Point3<f64> {
         let mut props = ffi::GProp_GProps_ctor();
 
         let inner_shape = ffi::cast_face_to_shape(&self.inner);
@@ -254,10 +254,10 @@ impl Face {
 
         let center = ffi::GProp_GProps_CentreOfMass(&props);
 
-        dvec3(center.X(), center.Y(), center.Z())
+        point![center.X(), center.Y(), center.Z()]
     }
 
-    pub fn normal_at(&self, pos: DVec3) -> DVec3 {
+    pub fn normal_at(&self, pos: Point3<f64>) -> UnitVector3<f64> {
         let surface = ffi::BRep_Tool_Surface(&self.inner);
         let projector = ffi::GeomAPI_ProjectPointOnSurf_ctor(&make_point(pos), &surface);
         let mut u: f64 = 0.0;
@@ -271,10 +271,10 @@ impl Face {
         let face = ffi::BRepGProp_Face_ctor(&self.inner);
         face.Normal(u, v, p.pin_mut(), normal.pin_mut());
 
-        dvec3(normal.X(), normal.Y(), normal.Z())
+        UnitVector3::new_normalize(vector![normal.X(), normal.Y(), normal.Z()])
     }
 
-    pub fn normal_at_center(&self) -> DVec3 {
+    pub fn normal_at_center(&self) -> UnitVector3<f64> {
         let center = self.center_of_mass();
         self.normal_at(center)
     }
@@ -284,16 +284,16 @@ impl Face {
 
         let center = self.center_of_mass();
         let normal = self.normal_at(center);
-        let mut x_dir = dvec3(0.0, 0.0, 1.0).cross(normal);
+        let mut x_dir = UnitVector3::new_normalize(Vector3::z().cross(&normal));
 
-        if x_dir.length() < NORMAL_DIFF_TOLERANCE {
+        if x_dir.magnitude() < NORMAL_DIFF_TOLERANCE {
             // The normal of this face is too close to the same direction
             // as the global Z axis. Use the global X axis for X instead.
-            x_dir = dvec3(1.0, 0.0, 0.0);
+            x_dir = UnitVector3::new_unchecked(Vector3::x());
         }
 
         let mut workplane = Workplane::new(x_dir, normal);
-        workplane.set_translation(center);
+        workplane.set_translation(center.coords);
         workplane
     }
 
@@ -400,7 +400,7 @@ impl CompoundFace {
     }
 
     #[must_use]
-    pub fn extrude(&self, dir: DVec3) -> Shape {
+    pub fn extrude(&self, dir: Vector3<f64>) -> Shape {
         let prism_vec = make_vec(dir);
 
         let copy = false;
@@ -416,7 +416,7 @@ impl CompoundFace {
     }
 
     #[must_use]
-    pub fn revolve(&self, origin: DVec3, axis: DVec3, angle: Option<Angle>) -> Shape {
+    pub fn revolve(&self, origin: Point3<f64>, axis: Vector3<f64>, angle: Option<Angle>) -> Shape {
         let revol_axis = make_axis_1(origin, axis);
 
         let angle = angle.map(Angle::radians).unwrap_or(std::f64::consts::PI * 2.0);
@@ -472,7 +472,7 @@ impl CompoundFace {
         CompoundFace::from_compound(compound)
     }
 
-    pub fn set_global_translation(&mut self, translation: DVec3) {
+    pub fn set_global_translation(&mut self, translation: Vector3<f64>) {
         let shape = ffi::cast_compound_to_shape(&self.inner);
         let mut shape = Shape::from_shape(shape);
 

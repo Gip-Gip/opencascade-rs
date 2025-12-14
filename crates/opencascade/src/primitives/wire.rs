@@ -8,7 +8,7 @@ use crate::{
     Error,
 };
 use cxx::UniquePtr;
-use glam::{dvec3, DVec3};
+use nalgebra::{Point3, Vector3, point, vector};
 use opencascade_sys::ffi;
 
 pub struct Wire {
@@ -48,7 +48,7 @@ impl Wire {
         Self::from_wire(make_wire.pin_mut().Wire())
     }
 
-    pub fn from_ordered_points(points: impl IntoIterator<Item = DVec3>) -> Result<Self, Error> {
+    pub fn from_ordered_points(points: impl IntoIterator<Item = Point3<f64>>) -> Result<Self, Error> {
         let points: Vec<_> = points.into_iter().collect();
         if points.len() < 2 {
             return Err(Error::NotEnoughPoints);
@@ -124,7 +124,7 @@ impl Wire {
     }
 
     #[must_use]
-    pub fn mirror_along_axis(&self, axis_origin: DVec3, axis_dir: DVec3) -> Self {
+    pub fn mirror_along_axis(&self, axis_origin: Point3<f64>, axis_dir: Vector3<f64>) -> Self {
         let axis_dir = make_dir(axis_dir);
         let axis = ffi::gp_Ax1_ctor(&make_point(axis_origin), &axis_dir);
 
@@ -146,10 +146,10 @@ impl Wire {
         let half_width = width / 2.0;
         let half_height = height / 2.0;
 
-        let p1 = dvec3(-half_width, half_height, 0.0);
-        let p2 = dvec3(half_width, half_height, 0.0);
-        let p3 = dvec3(half_width, -half_height, 0.0);
-        let p4 = dvec3(-half_width, -half_height, 0.0);
+        let p1 = point![-half_width, half_height, 0.0];
+        let p2 = point![half_width, half_height, 0.0];
+        let p3 = point![half_width, -half_height, 0.0];
+        let p4 = point![-half_width, -half_height, 0.0];
 
         let top = Edge::segment(p1, p2);
         let right = Edge::segment(p2, p3);
@@ -221,15 +221,15 @@ impl Wire {
     }
 
     #[must_use]
-    pub fn translate(&self, offset: DVec3) -> Self {
-        self.transform(offset, dvec3(1.0, 0.0, 0.0), 0.degrees())
+    pub fn translate(&self, offset: Vector3<f64>) -> Self {
+        self.transform(offset, vector![1.0, 0.0, 0.0], 0.degrees())
     }
 
     #[must_use]
-    pub fn transform(&self, translation: DVec3, rotation_axis: DVec3, angle: Angle) -> Self {
+    pub fn transform(&self, translation: Vector3<f64>, rotation_axis: Vector3<f64>, angle: Angle) -> Self {
         let mut transform = ffi::new_transform();
         let rotation_axis_vec =
-            ffi::gp_Ax1_ctor(&make_point(DVec3::ZERO), &make_dir(rotation_axis));
+            ffi::gp_Ax1_ctor(&make_point(Point3::origin()), &make_dir(rotation_axis));
         let translation_vec = make_vec(translation);
 
         transform.pin_mut().SetRotation(&rotation_axis_vec, angle.radians());

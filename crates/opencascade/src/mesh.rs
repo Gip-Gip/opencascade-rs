@@ -3,14 +3,14 @@ use crate::{
     Error,
 };
 use cxx::UniquePtr;
-use glam::{dvec2, dvec3, DVec2, DVec3};
+use nalgebra::{Point3, Vector2, Vector3, point, vector};
 use opencascade_sys::ffi;
 
 #[derive(Debug)]
 pub struct Mesh {
-    pub vertices: Vec<DVec3>,
-    pub uvs: Vec<DVec2>,
-    pub normals: Vec<DVec3>,
+    pub vertices: Vec<Point3<f64>>,
+    pub uvs: Vec<Vector2<f64>>,
+    pub normals: Vec<Vector3<f64>>,
     pub indices: Vec<usize>,
 }
 
@@ -52,7 +52,7 @@ impl Mesher {
             for i in 1..=face_point_count {
                 let mut point = ffi::Poly_Triangulation_Node(triangulation, i);
                 point.pin_mut().Transform(&ffi::TopLoc_Location_Transformation(&location));
-                vertices.push(dvec3(point.X(), point.Y(), point.Z()));
+                vertices.push(point![point.X(), point.Y(), point.Z()]);
             }
 
             let mut u_min = f64::INFINITY;
@@ -71,7 +71,7 @@ impl Mesher {
                 u_max = u_max.max(u);
                 v_max = v_max.max(v);
 
-                uvs.push(dvec2(u, v));
+                uvs.push(vector![u, v]);
             }
 
             // Normalize the newly added UV coordinates.
@@ -93,7 +93,7 @@ impl Mesher {
             // TODO(bschwind) - Why do we start at 1 here?
             for i in 1..(normal_array.Length() as usize) {
                 let normal = ffi::Poly_Triangulation_Normal(triangulation, i as i32);
-                normals.push(dvec3(normal.X(), normal.Y(), normal.Z()));
+                normals.push(vector![normal.X(), normal.Y(), normal.Z()]);
             }
 
             for i in 1..=triangulation.NbTriangles() {

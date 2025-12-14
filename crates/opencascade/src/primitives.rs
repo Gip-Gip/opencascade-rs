@@ -1,6 +1,6 @@
 use cxx::UniquePtr;
-use glam::{DVec2, DVec3};
 use opencascade_sys::ffi;
+use nalgebra::{Point2, Point3, Vector3};
 
 mod boolean_shape;
 mod compound;
@@ -87,27 +87,27 @@ impl<T: Into<Shape>> IntoShape for T {
     }
 }
 
-pub fn make_point(p: DVec3) -> UniquePtr<ffi::gp_Pnt> {
+pub fn make_point(p: Point3<f64>) -> UniquePtr<ffi::gp_Pnt> {
     ffi::new_point(p.x, p.y, p.z)
 }
 
-pub fn make_point2d(p: DVec2) -> UniquePtr<ffi::gp_Pnt2d> {
+pub fn make_point2d(p: Point2<f64>) -> UniquePtr<ffi::gp_Pnt2d> {
     ffi::new_point_2d(p.x, p.y)
 }
 
-fn make_dir(p: DVec3) -> UniquePtr<ffi::gp_Dir> {
+fn make_dir(p: Vector3<f64>) -> UniquePtr<ffi::gp_Dir> {
     ffi::gp_Dir_ctor(p.x, p.y, p.z)
 }
 
-fn make_vec(vec: DVec3) -> UniquePtr<ffi::gp_Vec> {
+fn make_vec(vec: Vector3<f64>) -> UniquePtr<ffi::gp_Vec> {
     ffi::new_vec(vec.x, vec.y, vec.z)
 }
 
-fn make_axis_1(origin: DVec3, dir: DVec3) -> UniquePtr<ffi::gp_Ax1> {
+fn make_axis_1(origin: Point3<f64>, dir: Vector3<f64>) -> UniquePtr<ffi::gp_Ax1> {
     ffi::gp_Ax1_ctor(&make_point(origin), &make_dir(dir))
 }
 
-pub fn make_axis_2(origin: DVec3, dir: DVec3) -> UniquePtr<ffi::gp_Ax2> {
+pub fn make_axis_2(origin: Point3<f64>, dir: Vector3<f64>) -> UniquePtr<ffi::gp_Ax2> {
     ffi::gp_Ax2_ctor(&make_point(origin), &make_dir(dir))
 }
 
@@ -142,7 +142,7 @@ impl EdgeIterator {
         self.filter(move |edge| {
             edge.edge_type() == EdgeType::Line
                 && 1.0
-                    - (edge.end_point() - edge.start_point()).normalize().dot(normalized_dir).abs()
+                    - (edge.end_point() - edge.start_point()).normalize().dot(&normalized_dir).abs()
                     < 0.0001
         })
     }
@@ -160,18 +160,18 @@ pub enum Direction {
     NegY,
     PosZ,
     NegZ,
-    Custom(DVec3),
+    Custom(Vector3<f64>),
 }
 
 impl Direction {
-    pub fn normalized_vec(&self) -> DVec3 {
+    pub fn normalized_vec(&self) -> Vector3<f64> {
         match self {
-            Self::PosX => DVec3::X,
-            Self::NegX => DVec3::NEG_X,
-            Self::PosY => DVec3::Y,
-            Self::NegY => DVec3::NEG_Y,
-            Self::PosZ => DVec3::Z,
-            Self::NegZ => DVec3::NEG_Z,
+            Self::PosX => Vector3::x(),
+            Self::NegX => -Vector3::x(),
+            Self::PosY => Vector3::y(),
+            Self::NegY => -Vector3::y(),
+            Self::PosZ => Vector3::z(),
+            Self::NegZ => -Vector3::z(),
             Self::Custom(dir) => dir.normalize(),
         }
     }
@@ -186,8 +186,8 @@ impl FaceIterator {
         let normalized_dir = direction.normalized_vec();
 
         self.max_by(|face_1, face_2| {
-            let dist_1 = face_1.center_of_mass().dot(normalized_dir);
-            let dist_2 = face_2.center_of_mass().dot(normalized_dir);
+            let dist_1 = face_1.center_of_mass().coords.dot(&normalized_dir);
+            let dist_2 = face_2.center_of_mass().coords.dot(&normalized_dir);
 
             PartialOrd::partial_cmp(&dist_1, &dist_2)
                 .expect("Face center of masses should contain no NaNs")

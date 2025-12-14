@@ -3,7 +3,7 @@ use crate::{
     Error,
 };
 use cxx::UniquePtr;
-use glam::{dvec3, DVec3};
+use nalgebra::{Point3, vector};
 use opencascade_sys::ffi;
 
 pub struct Solid {
@@ -123,10 +123,10 @@ impl Solid {
     /// creates a face out of them, and then extrudes it by h in the positive Z
     /// direction.
     pub fn extrude_polygon(
-        points: impl IntoIterator<Item = DVec3>,
+        points: impl IntoIterator<Item = Point3<f64>>,
         h: f64,
     ) -> Result<Solid, Error> {
         let wire = Wire::from_ordered_points(points)?;
-        Ok(Face::from_wire(&wire).extrude(dvec3(0.0, 0.0, h)))
+        Ok(Face::from_wire(&wire).extrude(vector![0.0, 0.0, h]))
     }
 }
