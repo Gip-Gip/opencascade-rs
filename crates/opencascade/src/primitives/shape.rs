@@ -1,10 +1,7 @@
 use crate::{
-    mesh::{Mesh, Mesher},
-    primitives::{
-        make_axis_1, make_axis_2, make_dir, make_point, make_point2d, make_vec, BooleanShape,
-        Compound, Edge, EdgeIterator, Face, FaceIterator, ShapeType, Shell, Solid, Vertex, Wire,
-    },
-    Error,
+    Error, mesh::{Mesh, Mesher}, primitives::{
+        BooleanShape, Compound, Edge, EdgeIterator, Face, FaceIterator, ShapeType, Shell, Solid, SolidIterator, Vertex, Wire, make_axis_1, make_axis_2, make_dir, make_point, make_point2d, make_vec
+    }
 };
 use cxx::UniquePtr;
 use nalgebra::{Point3, Vector3, point};
@@ -662,6 +659,11 @@ impl Shape {
         let explorer = ffi::TopExp_Explorer_ctor(&self.inner, ffi::TopAbs_ShapeEnum::TopAbs_EDGE);
         EdgeIterator { explorer }
     }
+    
+    pub fn solids(&self) -> SolidIterator {
+        let explorer = ffi::TopExp_Explorer_ctor(&self.inner, ffi::TopAbs_ShapeEnum::TopAbs_SOLID);
+        SolidIterator { explorer }
+    }
 
     pub fn faces(&self) -> FaceIterator {
         let explorer = ffi::TopExp_Explorer_ctor(&self.inner, ffi::TopAbs_ShapeEnum::TopAbs_FACE);
@@ -736,6 +738,14 @@ impl Shape {
         make_hole.pin_mut().Build();
 
         Self::from_shape(make_hole.pin_mut().Shape())
+    }
+
+    pub fn fix(&mut self) {
+        let mut shapefixer = ffi::ShapeFix_Shape_new(&self.inner);
+        ffi::ShapeFix_Shape_perform(shapefixer.pin_mut());
+        let inner = ffi::ShapeFix_Shape_shape(shapefixer);
+
+        self.inner = inner;
     }
 }
 

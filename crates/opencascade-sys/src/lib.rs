@@ -468,6 +468,12 @@ pub mod ffi {
         pub fn Orientation(self: &TopoDS_Shape) -> TopAbs_Orientation;
         pub fn Orientation(self: &TopoDS_Face) -> TopAbs_Orientation;
 
+        // Shape Fixer
+        type ShapeFix_Shape;
+        pub fn ShapeFix_Shape_new(shape: &TopoDS_Shape) -> UniquePtr<ShapeFix_Shape>;
+        pub fn ShapeFix_Shape_perform(shapefix: Pin<&mut ShapeFix_Shape>) -> bool;
+        pub fn ShapeFix_Shape_shape(shapefix: UniquePtr<ShapeFix_Shape>) -> UniquePtr<TopoDS_Shape>;
+
         // Compound Shapes
         type TopoDS_Compound;
         pub fn TopoDS_Compound_as_shape(

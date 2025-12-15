@@ -59,6 +59,7 @@
 #include <IGESControl_Writer.hxx>
 #include <Law_Function.hxx>
 #include <Law_Interpol.hxx>
+#include <Message_ProgressRange.hxx>
 #include <NCollection_Array1.hxx>
 #include <NCollection_Array2.hxx>
 #include <Poly_Connect.hxx>
@@ -85,6 +86,7 @@
 #include <gp_Pnt.hxx>
 #include <gp_Trsf.hxx>
 #include <gp_Vec.hxx>
+#include <ShapeFix_Shape.hxx>
 
 // Generic template constructor
 template <typename T, typename... Args> std::unique_ptr<T> construct_unique(Args... args) {
@@ -290,6 +292,10 @@ inline const TopoDS_Shape &cast_face_to_shape(const TopoDS_Face &face) { return 
 inline const TopoDS_Shape &cast_shell_to_shape(const TopoDS_Shell &shell) { return shell; }
 inline const TopoDS_Shape &cast_solid_to_shape(const TopoDS_Solid &solid) { return solid; }
 inline const TopoDS_Shape &cast_compound_to_shape(const TopoDS_Compound &compound) { return compound; }
+
+inline std::unique_ptr<ShapeFix_Shape> ShapeFix_Shape_new(const TopoDS_Shape &shape) { return std::unique_ptr<ShapeFix_Shape>(new ShapeFix_Shape(shape)); }
+inline bool ShapeFix_Shape_perform(ShapeFix_Shape &shapefix) { return shapefix.Perform(); }
+inline std::unique_ptr<TopoDS_Shape> ShapeFix_Shape_shape(std::unique_ptr<ShapeFix_Shape> shapefix) { return std::unique_ptr<TopoDS_Shape>(new TopoDS_Shape(shapefix->Shape())); }
 
 // Compound shapes
 inline std::unique_ptr<TopoDS_Shape> TopoDS_Compound_as_shape(std::unique_ptr<TopoDS_Compound> compound) {
