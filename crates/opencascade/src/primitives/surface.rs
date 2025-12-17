@@ -1,6 +1,6 @@
 use crate::primitives::make_point;
 use cxx::UniquePtr;
-use nalgebra::{Point3};
+use nalgebra::Point3;
 use opencascade_sys::ffi;
 
 pub struct Surface {

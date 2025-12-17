@@ -1,6 +1,6 @@
 use cxx::UniquePtr;
-use opencascade_sys::ffi;
 use nalgebra::{Point2, Point3, Vector3};
+use opencascade_sys::ffi;
 
 mod boolean_shape;
 mod compound;
@@ -213,7 +213,7 @@ impl Iterator for FaceIterator {
 }
 
 pub struct SolidIterator {
-    explorer: UniquePtr<ffi::TopExp_Explorer>
+    explorer: UniquePtr<ffi::TopExp_Explorer>,
 }
 
 impl Iterator for SolidIterator {

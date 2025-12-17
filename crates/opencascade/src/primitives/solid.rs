@@ -3,7 +3,7 @@ use crate::{
     Error,
 };
 use cxx::UniquePtr;
-use nalgebra::{Point3, vector};
+use nalgebra::{vector, Point3};
 use opencascade_sys::ffi;
 
 pub struct Solid {

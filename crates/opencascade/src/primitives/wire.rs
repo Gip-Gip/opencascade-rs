@@ -8,7 +8,7 @@ use crate::{
     Error,
 };
 use cxx::UniquePtr;
-use nalgebra::{Point3, Vector3, point, vector};
+use nalgebra::{point, vector, Point3, Vector3};
 use opencascade_sys::ffi;
 
 pub struct Wire {
@@ -48,7 +48,9 @@ impl Wire {
         Self::from_wire(make_wire.pin_mut().Wire())
     }
 
-    pub fn from_ordered_points(points: impl IntoIterator<Item = Point3<f64>>) -> Result<Self, Error> {
+    pub fn from_ordered_points(
+        points: impl IntoIterator<Item = Point3<f64>>,
+    ) -> Result<Self, Error> {
         let points: Vec<_> = points.into_iter().collect();
         if points.len() < 2 {
             return Err(Error::NotEnoughPoints);
@@ -226,7 +228,12 @@ impl Wire {
     }
 
     #[must_use]
-    pub fn transform(&self, translation: Vector3<f64>, rotation_axis: Vector3<f64>, angle: Angle) -> Self {
+    pub fn transform(
+        &self,
+        translation: Vector3<f64>,
+        rotation_axis: Vector3<f64>,
+        angle: Angle,
+    ) -> Self {
         let mut transform = ffi::new_transform();
         let rotation_axis_vec =
             ffi::gp_Ax1_ctor(&make_point(Point3::origin()), &make_dir(rotation_axis));

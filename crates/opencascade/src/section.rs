@@ -36,11 +36,11 @@ pub fn edges(target: &Shape, tool: &Shape) -> Vec<Shape> {
 #[cfg(test)]
 mod test {
     use super::*;
-    use nalgebra::point;
     use crate::{
         primitives::{IntoShape, ShapeType},
         workplane::Workplane,
     };
+    use nalgebra::point;
 
     #[test]
     fn section_new() {

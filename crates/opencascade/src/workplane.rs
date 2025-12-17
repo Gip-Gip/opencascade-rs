@@ -1,73 +1,8 @@
-use std::sync::LazyLock;
-
-use crate::primitives::{Edge, Wire};
-use nalgebra::{Point3, UnitQuaternion, UnitVector3, Vector3, point, vector};
-
-const X_NORMAL: UnitVector3<f64> = UnitVector3::new_unchecked(vector![1.0, 0.0, 0.0]);
-const Y_NORMAL: UnitVector3<f64> = UnitVector3::new_unchecked(vector![0.0, 1.0, 0.0]);
-const Z_NORMAL: UnitVector3<f64> = UnitVector3::new_unchecked(vector![0.0, 0.0, 1.0]);
-const BASE_NORMAL: UnitVector3<f64> = Z_NORMAL;
-static INTER_QUAT: LazyLock<UnitQuaternion<f64>> = LazyLock::new(|| {UnitQuaternion::rotation_between(&Z_NORMAL, &X_NORMAL).unwrap()});
-
-#[derive(Debug, Clone, Copy)]
-pub struct TandR {
-    pub translation: Vector3<f64>,
-    pub rotation_quat: UnitQuaternion<f64>,
-    pub inverse: bool,
-}
-
-impl TandR {
-    pub fn new(translation: Vector3<f64>, rotation_quat: UnitQuaternion<f64>) -> Self {
-        Self { translation, rotation_quat, inverse: false }
-    }
-
-    /// Do no translation
-    pub fn noop() -> Self {
-        Self {
-            translation: Vector3::zeros(),
-            rotation_quat: UnitQuaternion::identity(),
-            inverse: false
-        }
-    }
-
-    pub fn from_rotation_between(a: &UnitVector3<f64>, b: &UnitVector3<f64>) -> Self {
-        let rotation_quat = match UnitQuaternion::rotation_between(&a, &b) {
-            Some(quat) => quat,
-            None => {
-                let quat_1 = *INTER_QUAT;
-                let inter_norm = quat_1 * a;
-
-                let quat_2 = UnitQuaternion::rotation_between(&inter_norm, &b).unwrap();
-
-                quat_2 * quat_1
-            }
-        };
-
-        Self {
-            translation: Vector3::zeros(),
-            rotation_quat,
-            inverse: false,
-        }
-    }
-
-    pub fn transform_point(&self, mut point: Point3<f64>) -> Point3<f64> {
-        if self.inverse {
-            point = point + self.translation;
-            point = self.rotation_quat * point;
-
-            point
-        } else {
-            point = self.rotation_quat * point;
-            point = point + self.translation;
-
-            point
-        }
-    }
-
-    pub fn inverse(&self) -> Self {
-        Self { translation: -self.translation, rotation_quat: self.rotation_quat.inverse(), inverse: !self.inverse }
-    }
-}
+use crate::{
+    primitives::{Edge, Wire},
+    TandR, BASE_NORMAL, X_NORMAL, Y_NORMAL,
+};
+use nalgebra::{point, Point3, UnitQuaternion, UnitVector3, Vector3};
 
 #[derive(Debug, Copy, Clone)]
 pub enum Plane {
@@ -85,7 +20,7 @@ impl Plane {
         self.transform().transform_point(point)
     }
 
-    pub fn transform(&self) -> TandR {
+    pub fn transform(&self) -> TandR<f64> {
         //match self {
         //    Self::XY => Affine3::from_matrix_unchecked(Matrix4::from_columns(&[Vector4::x(), Vector4::y(), Vector4::z(), Vector4::zeros()])),
         //    Self::YZ => Affine3::from_matrix_unchecked(Matrix4::from_columns(&[Vector4::y(), Vector4::z(), Vector4::x(), Vector4::zeros()])),
@@ -109,7 +44,7 @@ impl Plane {
         //}
 
         match self {
-            Self::XY => TandR::noop(),
+            Self::XY => TandR::default(),
             Self::YZ => TandR::from_rotation_between(&BASE_NORMAL, &X_NORMAL),
             Self::ZX => TandR::from_rotation_between(&BASE_NORMAL, &Y_NORMAL),
             Self::YX => TandR::from_rotation_between(&BASE_NORMAL, &-BASE_NORMAL),
@@ -122,18 +57,12 @@ impl Plane {
 
 #[derive(Debug, Clone)]
 pub struct Workplane {
-    transform: TandR,
+    transform: TandR<f64>,
 }
 
 impl Workplane {
     pub fn new(x_dir: UnitVector3<f64>, normal_dir: UnitVector3<f64>) -> Self {
-        Self {
-            transform: Plane::Custom {
-                x_dir,
-                normal_dir,
-            }
-            .transform(),
-        }
+        Self { transform: Plane::Custom { x_dir, normal_dir }.transform() }
     }
 
     pub fn xy() -> Self {
@@ -192,7 +121,7 @@ impl Workplane {
         self.transform.translation += offset;
     }
 
-    pub fn transformed(&self, tandr: TandR) -> Self {
+    pub fn transformed(&self, tandr: TandR<f64>) -> Self {
         let mut new = self.clone();
         new.transform.translation += tandr.translation;
 

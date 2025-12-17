@@ -1,7 +1,7 @@
 use crate::primitives::{make_axis_2, make_point};
 use cxx::UniquePtr;
+use nalgebra::{point, vector, Point3, UnitVector3, Vector3};
 use opencascade_sys::ffi;
-use nalgebra::{Point3, UnitVector3, Vector3, point, vector};
 
 use super::make_vec;
 

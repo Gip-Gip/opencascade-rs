@@ -8,7 +8,7 @@ use crate::{
     workplane::Workplane,
 };
 use cxx::UniquePtr;
-use nalgebra::{Point3, UnitVector3, Vector3, point, vector};
+use nalgebra::{point, vector, Point3, UnitVector3, Vector3};
 use opencascade_sys::ffi;
 
 pub struct Face {

@@ -3,7 +3,7 @@ use crate::{
     Error,
 };
 use cxx::UniquePtr;
-use nalgebra::{Point3, Vector2, Vector3, point, vector};
+use nalgebra::{point, vector, Point3, Vector2, Vector3};
 use opencascade_sys::ffi;
 
 #[derive(Debug)]

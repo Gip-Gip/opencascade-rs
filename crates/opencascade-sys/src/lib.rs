@@ -472,7 +472,8 @@ pub mod ffi {
         type ShapeFix_Shape;
         pub fn ShapeFix_Shape_new(shape: &TopoDS_Shape) -> UniquePtr<ShapeFix_Shape>;
         pub fn ShapeFix_Shape_perform(shapefix: Pin<&mut ShapeFix_Shape>) -> bool;
-        pub fn ShapeFix_Shape_shape(shapefix: UniquePtr<ShapeFix_Shape>) -> UniquePtr<TopoDS_Shape>;
+        pub fn ShapeFix_Shape_shape(shapefix: UniquePtr<ShapeFix_Shape>)
+            -> UniquePtr<TopoDS_Shape>;
 
         // Compound Shapes
         type TopoDS_Compound;

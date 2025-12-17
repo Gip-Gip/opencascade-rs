@@ -1,10 +1,14 @@
 use crate::{
-    Error, mesh::{Mesh, Mesher}, primitives::{
-        BooleanShape, Compound, Edge, EdgeIterator, Face, FaceIterator, ShapeType, Shell, Solid, SolidIterator, Vertex, Wire, make_axis_1, make_axis_2, make_dir, make_point, make_point2d, make_vec
-    }
+    mesh::{Mesh, Mesher},
+    primitives::{
+        make_axis_1, make_axis_2, make_dir, make_point, make_point2d, make_vec, BooleanShape,
+        Compound, Edge, EdgeIterator, Face, FaceIterator, ShapeType, Shell, Solid, SolidIterator,
+        Vertex, Wire,
+    },
+    Error,
 };
 use cxx::UniquePtr;
-use nalgebra::{Point3, Vector3, point};
+use nalgebra::{point, Point3, Vector3};
 use opencascade_sys::ffi;
 use std::{cmp::Ordering, path::Path};
 
@@ -296,10 +300,11 @@ impl Shape {
     /// Make a box with one corner at corner_1, and the opposite corner
     /// at corner_2.
     pub fn box_from_corners(corner_1: Point3<f64>, corner_2: Point3<f64>) -> Self {
-        let (min_corner, max_corner) = match corner_1.partial_cmp(&corner_2).unwrap_or(Ordering::Equal) {
-            Ordering::Less | Ordering::Equal => (corner_1, corner_2),
-            Ordering::Greater => (corner_2, corner_1),
-        };
+        let (min_corner, max_corner) =
+            match corner_1.partial_cmp(&corner_2).unwrap_or(Ordering::Equal) {
+                Ordering::Less | Ordering::Equal => (corner_1, corner_2),
+                Ordering::Greater => (corner_2, corner_1),
+            };
 
         let point = ffi::new_point(min_corner.x, min_corner.y, min_corner.z);
         let diff = max_corner - min_corner;
@@ -659,7 +664,7 @@ impl Shape {
         let explorer = ffi::TopExp_Explorer_ctor(&self.inner, ffi::TopAbs_ShapeEnum::TopAbs_EDGE);
         EdgeIterator { explorer }
     }
-    
+
     pub fn solids(&self) -> SolidIterator {
         let explorer = ffi::TopExp_Explorer_ctor(&self.inner, ffi::TopAbs_ShapeEnum::TopAbs_SOLID);
         SolidIterator { explorer }
@@ -671,7 +676,11 @@ impl Shape {
     }
 
     // TODO(bschwind) - Convert the return type to an iterator.
-    pub fn faces_along_line(&self, line_origin: Point3<f64>, line_dir: Vector3<f64>) -> Vec<LineFaceHitPoint> {
+    pub fn faces_along_line(
+        &self,
+        line_origin: Point3<f64>,
+        line_dir: Vector3<f64>,
+    ) -> Vec<LineFaceHitPoint> {
         let mut intersector = ffi::BRepIntCurveSurface_Inter_ctor();
         let tolerance = 0.0001;
         intersector.pin_mut().Init(

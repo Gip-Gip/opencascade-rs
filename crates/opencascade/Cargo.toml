@@ -12,6 +12,7 @@ cxx = "1"
 opencascade-sys = { version = "0.2", path = "../opencascade-sys" }
 nalgebra = { version = "0.34.1", features = ["bytemuck"] }
 thiserror = "1"
+simba = "0.9.1"
 
 [features]
 default = ["builtin"]

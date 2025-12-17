@@ -1,5 +1,5 @@
 use cxx::UniquePtr;
-use nalgebra::{Point3, Vector3, point, vector};
+use nalgebra::{point, vector, Point3, Vector3};
 use opencascade_sys::ffi;
 
 use crate::primitives::Shape;
