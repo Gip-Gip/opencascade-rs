@@ -1,7 +1,7 @@
 use std::sync::LazyLock;
 
 use nalgebra::{vector, Point3, RealField, Scalar, UnitQuaternion, UnitVector3, Vector3};
-use simba::scalar::{SubsetOf, SupersetOf};
+use simba::scalar::SubsetOf;
 use thiserror::Error;
 
 pub mod angle;
