@@ -80,6 +80,16 @@ impl Wire {
 
         Self::from_make_wire(make_wire)
     }
+    
+    pub fn from_edges_consuming(edges: impl IntoIterator<Item = Edge>) -> Self {
+        let mut make_wire = ffi::BRepBuilderAPI_MakeWire_ctor();
+
+        for edge in edges.into_iter() {
+            make_wire.pin_mut().add_edge(&edge.inner);
+        }
+
+        Self::from_make_wire(make_wire)
+    }
 
     pub fn from_unordered_edges<T: AsRef<Edge>>(
         unordered_edges: impl IntoIterator<Item = T>,
