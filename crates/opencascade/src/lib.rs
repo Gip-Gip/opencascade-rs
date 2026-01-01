@@ -32,6 +32,8 @@ pub enum Error {
     UntriangulatedFace,
     #[error("at least 2 points are required for creating a wire")]
     NotEnoughPoints,
+    #[error("builder would throw StdFail_NotDone")]
+    NotDone,
 }
 
 pub(crate) const X_NORMAL: UnitVector3<f64> = UnitVector3::new_unchecked(vector![1.0, 0.0, 0.0]);

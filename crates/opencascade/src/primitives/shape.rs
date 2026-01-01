@@ -3,7 +3,7 @@ use crate::{
     primitives::{
         make_axis_1, make_axis_2, make_dir, make_point, make_point2d, make_vec, BooleanShape,
         Compound, Edge, EdgeIterator, Face, FaceIterator, ShapeType, Shell, Solid, SolidIterator,
-        Vertex, Wire,
+        Vertex, Wire, WireIterator,
     },
     Error,
 };
@@ -592,8 +592,13 @@ impl Shape {
     }
 
     #[must_use]
-    pub fn intersect(&self, other: &Shape) -> BooleanShape {
+    pub fn intersect(&self, other: &Shape) -> Result<BooleanShape, Error> {
         let mut fuse_operation = ffi::BRepAlgoAPI_Common_ctor(&self.inner, &other.inner);
+
+        if !fuse_operation.IsDone() {
+            return Err(Error::NotDone);
+        }
+
         let edge_list = fuse_operation.pin_mut().SectionEdges();
         let vec = ffi::shape_list_to_vector(edge_list);
 
@@ -605,7 +610,7 @@ impl Shape {
 
         let shape = Self::from_shape(fuse_operation.pin_mut().Shape());
 
-        BooleanShape { shape, new_edges }
+        Ok(BooleanShape { shape, new_edges })
     }
 
     pub fn write_stl<P: AsRef<Path>>(&self, path: P) -> Result<(), Error> {
@@ -668,6 +673,11 @@ impl Shape {
     pub fn solids(&self) -> SolidIterator {
         let explorer = ffi::TopExp_Explorer_ctor(&self.inner, ffi::TopAbs_ShapeEnum::TopAbs_SOLID);
         SolidIterator { explorer }
+    }
+
+    pub fn wires(&self) -> WireIterator {
+        let explorer = ffi::TopExp_Explorer_ctor(&self.inner, ffi::TopAbs_ShapeEnum::TopAbs_WIRE);
+        WireIterator { explorer }
     }
 
     pub fn faces(&self) -> FaceIterator {

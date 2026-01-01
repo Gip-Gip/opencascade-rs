@@ -1,11 +1,7 @@
 use crate::{
-    angle::Angle,
-    law_function::law_function_from_graph,
-    make_pipe_shell::make_pipe_shell_with_law_function,
-    primitives::{
-        make_axis_1, make_point, make_vec, EdgeIterator, JoinType, Shape, Solid, Surface, Wire,
-    },
-    workplane::Workplane,
+    Error, angle::Angle, law_function::law_function_from_graph, make_pipe_shell::make_pipe_shell_with_law_function, primitives::{
+        EdgeIterator, JoinType, Shape, Solid, Surface, Wire, make_axis_1, make_point, make_vec
+    }, workplane::Workplane
 };
 use cxx::UniquePtr;
 use nalgebra::{point, vector, Point3, UnitVector3, Vector3};
@@ -28,18 +24,22 @@ impl Face {
         Self { inner }
     }
 
-    fn from_make_face(make_face: UniquePtr<ffi::BRepBuilderAPI_MakeFace>) -> Self {
-        Self::from_face(make_face.Face())
+    fn from_make_face(make_face: UniquePtr<ffi::BRepBuilderAPI_MakeFace>) -> Result<Self, Error> {
+        if !make_face.IsDone() {
+            return Err(Error::NotDone);
+        }
+
+        Ok(Self::from_face(make_face.Face()))
     }
 
-    pub fn from_wire(wire: &Wire) -> Self {
+    pub fn from_wire(wire: &Wire) -> Result<Self, Error> {
         let only_plane = false;
         let make_face = ffi::BRepBuilderAPI_MakeFace_wire(&wire.inner, only_plane);
-
+ 
         Self::from_make_face(make_face)
     }
 
-    pub fn from_surface(surface: &Surface) -> Self {
+    pub fn from_surface(surface: &Surface) -> Result<Self, Error> {
         const EDGE_TOLERANCE: f64 = 0.0001;
 
         let make_face = ffi::BRepBuilderAPI_MakeFace_surface(&surface.inner, EDGE_TOLERANCE);

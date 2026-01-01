@@ -1,6 +1,5 @@
 use crate::{
-    primitives::{Edge, Wire},
-    TandR, BASE_NORMAL, X_NORMAL, Y_NORMAL,
+    BASE_NORMAL, Error, TandR, X_NORMAL, Y_NORMAL, primitives::{Edge, Wire}
 };
 use nalgebra::{point, Point3, UnitQuaternion, UnitVector3, Vector3};
 
@@ -153,7 +152,7 @@ impl Workplane {
         self.transform.inverse().transform_point(pos)
     }
 
-    pub fn rect(&self, width: f64, height: f64) -> Wire {
+    pub fn rect(&self, width: f64, height: f64) -> Result<Wire, Error> {
         let half_width = width / 2.0;
         let half_height = height / 2.0;
 
@@ -170,7 +169,7 @@ impl Workplane {
         Wire::from_edges([&top, &right, &bottom, &left])
     }
 
-    pub fn circle(&self, x: f64, y: f64, radius: f64) -> Wire {
+    pub fn circle(&self, x: f64, y: f64, radius: f64) -> Result<Wire, Error> {
         let center = self.to_world_pos(point![x, y, 0.0]);
 
         let circle = Edge::circle(center, self.normal(), radius);
@@ -271,11 +270,11 @@ impl Sketch {
         self.arc((cursor.x, cursor.y), p2, p3)
     }
 
-    pub fn wire(self) -> Wire {
+    pub fn wire(self) -> Result<Wire, Error> {
         Wire::from_edges(&self.edges)
     }
 
-    pub fn close(mut self) -> Wire {
+    pub fn close(mut self) -> Result<Wire, Error> {
         let start_point = self.first_point.unwrap();
 
         let new_edge = Edge::segment(self.cursor, start_point);

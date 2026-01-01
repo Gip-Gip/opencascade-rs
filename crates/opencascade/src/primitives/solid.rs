@@ -59,11 +59,15 @@ impl Solid {
     }
 
     #[must_use]
-    pub fn subtract(&self, other: &Solid) -> BooleanShape {
+    pub fn subtract(&self, other: &Solid) -> Result<BooleanShape, Error> {
         let inner_shape = ffi::cast_solid_to_shape(&self.inner);
         let other_inner_shape = ffi::cast_solid_to_shape(&other.inner);
 
         let mut cut_operation = ffi::BRepAlgoAPI_Cut_ctor(inner_shape, other_inner_shape);
+
+        if !cut_operation.IsDone() {
+            return Err(Error::NotDone);
+        }
 
         let edge_list = cut_operation.pin_mut().SectionEdges();
         let vec = ffi::shape_list_to_vector(edge_list);
@@ -76,15 +80,20 @@ impl Solid {
 
         let shape = Shape::from_shape(cut_operation.pin_mut().Shape());
 
-        BooleanShape { shape, new_edges }
+        Ok(BooleanShape { shape, new_edges })
     }
 
     #[must_use]
-    pub fn union(&self, other: &Solid) -> BooleanShape {
+    pub fn union(&self, other: &Solid) -> Result<BooleanShape, Error> {
         let inner_shape = ffi::cast_solid_to_shape(&self.inner);
         let other_inner_shape = ffi::cast_solid_to_shape(&other.inner);
 
         let mut fuse_operation = ffi::BRepAlgoAPI_Fuse_ctor(inner_shape, other_inner_shape);
+
+        if !fuse_operation.IsDone() {
+            return Err(Error::NotDone);
+        }
+
         let edge_list = fuse_operation.pin_mut().SectionEdges();
         let vec = ffi::shape_list_to_vector(edge_list);
 
@@ -96,15 +105,20 @@ impl Solid {
 
         let shape = Shape::from_shape(fuse_operation.pin_mut().Shape());
 
-        BooleanShape { shape, new_edges }
+        Ok(BooleanShape { shape, new_edges })
     }
 
     #[must_use]
-    pub fn intersect(&self, other: &Solid) -> BooleanShape {
+    pub fn intersect(&self, other: &Solid) -> Result<BooleanShape, Error> {
         let inner_shape = ffi::cast_solid_to_shape(&self.inner);
         let other_inner_shape = ffi::cast_solid_to_shape(&other.inner);
 
         let mut fuse_operation = ffi::BRepAlgoAPI_Common_ctor(inner_shape, other_inner_shape);
+
+        if !fuse_operation.IsDone() {
+            return Err(Error::NotDone);
+        }
+
         let edge_list = fuse_operation.pin_mut().SectionEdges();
         let vec = ffi::shape_list_to_vector(edge_list);
 
@@ -116,7 +130,7 @@ impl Solid {
 
         let shape = Shape::from_shape(fuse_operation.pin_mut().Shape());
 
-        BooleanShape { shape, new_edges }
+        Ok(BooleanShape { shape, new_edges })
     }
 
     /// Purposefully underpowered for now, this simply takes a list of points,
@@ -127,6 +141,6 @@ impl Solid {
         h: f64,
     ) -> Result<Solid, Error> {
         let wire = Wire::from_ordered_points(points)?;
-        Ok(Face::from_wire(&wire).extrude(vector![0.0, 0.0, h]))
+        Ok(Face::from_wire(&wire)?.extrude(vector![0.0, 0.0, h]))
     }
 }

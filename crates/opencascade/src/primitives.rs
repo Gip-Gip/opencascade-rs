@@ -233,6 +233,27 @@ impl Iterator for SolidIterator {
     }
 }
 
+pub struct WireIterator {
+    explorer: UniquePtr<ffi::TopExp_Explorer>,
+}
+
+impl Iterator for WireIterator {
+    type Item = Wire;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.explorer.More() {
+            let wire_inner = ffi::TopoDS_cast_to_wire(self.explorer.Current());
+            let wire = Wire::from_wire(wire_inner);
+
+            self.explorer.pin_mut().Next();
+
+            Some(wire)
+        } else {
+            None
+        }
+    }
+}
+
 /// Given n and func, returns an iterator of (t, f(t)) values
 /// where t is in the range [0, 1].
 /// Note that n + 1 values are returned.
