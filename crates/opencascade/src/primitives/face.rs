@@ -1,11 +1,11 @@
 use crate::{
-    Error, angle::Angle, law_function::law_function_from_graph, make_pipe_shell::make_pipe_shell_with_law_function, primitives::{
+    Error, TopExpExplorerIter, angle::Angle, law_function::law_function_from_graph, make_pipe_shell::make_pipe_shell_with_law_function, primitives::{
         EdgeIterator, JoinType, Shape, Solid, Surface, Wire, make_axis_1, make_point, make_vec
     }, workplane::Workplane
 };
 use cxx::UniquePtr;
 use nalgebra::{point, vector, Point3, UnitVector3, Vector3};
-use opencascade_sys::ffi;
+use opencascade_sys::ffi::{self, TopExp_Explorer};
 
 pub struct Face {
     pub(crate) inner: UniquePtr<ffi::TopoDS_Face>,
@@ -238,12 +238,9 @@ impl Face {
     }
 
     pub fn edges(&self) -> EdgeIterator {
-        let explorer = ffi::TopExp_Explorer_ctor(
-            ffi::cast_face_to_shape(&self.inner),
-            ffi::TopAbs_ShapeEnum::TopAbs_EDGE,
-        );
+        let face_shape: Shape = self.into();
 
-        EdgeIterator { explorer }
+        EdgeIterator::new(&face_shape)
     }
 
     pub fn center_of_mass(&self) -> Point3<f64> {

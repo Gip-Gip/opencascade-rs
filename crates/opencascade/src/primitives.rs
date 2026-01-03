@@ -24,6 +24,8 @@ pub use surface::*;
 pub use vertex::*;
 pub use wire::*;
 
+use crate::TopExpExplorerIter;
+
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum ShapeType {
     /// Abstract topological data structure describes a basic entity.
@@ -112,27 +114,26 @@ pub fn make_axis_2(origin: Point3<f64>, dir: Vector3<f64>) -> UniquePtr<ffi::gp_
 }
 
 pub struct EdgeIterator {
-    explorer: UniquePtr<ffi::TopExp_Explorer>,
+    explorer_iter: TopExpExplorerIter,
 }
 
 impl Iterator for EdgeIterator {
     type Item = Edge;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.explorer.More() {
-            let edge = ffi::TopoDS_cast_to_edge(self.explorer.Current());
-            let edge = Edge::from_edge(edge);
-
-            self.explorer.pin_mut().Next();
-
-            Some(edge)
-        } else {
-            None
-        }
+        self.explorer_iter.next().map(|shape| shape.into())
     }
 }
 
 impl EdgeIterator {
+    pub fn new(shape: &Shape) -> Self {
+        let explorer_iter = TopExpExplorerIter::new(shape, ffi::TopAbs_ShapeEnum::TopAbs_EDGE);
+
+        Self {
+            explorer_iter
+        }
+    }
+
     pub fn parallel_to(
         self,
         direction: Direction,

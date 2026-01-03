@@ -1097,6 +1097,18 @@ pub mod ffi {
         pub fn Build(self: Pin<&mut BRepBuilderAPI_GTransform>, progress: &Message_ProgressRange);
         pub fn IsDone(self: &BRepBuilderAPI_GTransform) -> bool;
 
+        type BRepTools_WireExplorer;
+        
+        // Wire explorer
+        #[cxx_name = "construct_unique"]
+        pub fn BRepTools_WireExplorer_ctor(
+            wire: &TopoDS_Wire,
+        ) -> UniquePtr<BRepTools_WireExplorer>;
+
+        pub fn More(self: &BRepTools_WireExplorer) -> bool;
+        pub fn Next(self: Pin<&mut BRepTools_WireExplorer>);
+        pub fn Current(self: &BRepTools_WireExplorer) -> &TopoDS_Edge;
+
         // Topology Explorer
         type TopExp_Explorer;
         type TopAbs_ShapeEnum;

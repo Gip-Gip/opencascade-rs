@@ -13,6 +13,8 @@ opencascade-sys = { version = "0.2", path = "../opencascade-sys" }
 nalgebra = { version = "0.34.1", features = ["bytemuck"] }
 thiserror = "1"
 simba = "0.9.1"
+env_logger = "0.11.8"
+log = "0.4.28"
 
 [features]
 default = ["builtin"]

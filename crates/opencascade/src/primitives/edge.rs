@@ -1,4 +1,4 @@
-use crate::primitives::{make_axis_2, make_point};
+use crate::primitives::{Shape, make_axis_2, make_point};
 use cxx::UniquePtr;
 use nalgebra::{point, vector, Point3, UnitVector3, Vector3};
 use opencascade_sys::ffi;
@@ -171,7 +171,7 @@ pub struct ApproximationSegmentIterator {
 }
 
 impl Iterator for ApproximationSegmentIterator {
-    type Item = Vector3<f64>;
+    type Item = Point3<f64>;
 
     fn next(&mut self) -> Option<Self::Item> {
         if self.count <= self.approximator.NbPoints() as usize {
@@ -179,9 +179,25 @@ impl Iterator for ApproximationSegmentIterator {
                 ffi::GCPnts_TangentialDeflection_Value(&self.approximator, self.count as i32);
 
             self.count += 1;
-            Some(vector![point.X(), point.Y(), point.Z()])
+            Some(point![point.X(), point.Y(), point.Z()])
         } else {
             None
         }
+    }
+}
+
+impl From<Shape> for Edge {
+    fn from(value: Shape) -> Self {
+        let topo_edge = ffi::TopoDS_cast_to_edge(&value.inner);
+
+        Edge::from_edge(topo_edge)
+    }
+}
+
+impl From<&Shape> for Edge {
+    fn from(value: &Shape) -> Self {
+        let topo_edge = ffi::TopoDS_cast_to_edge(&value.inner);
+
+        Edge::from_edge(topo_edge)
     }
 }

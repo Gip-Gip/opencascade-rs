@@ -667,7 +667,7 @@ impl Shape {
 
     pub fn edges(&self) -> EdgeIterator {
         let explorer = ffi::TopExp_Explorer_ctor(&self.inner, ffi::TopAbs_ShapeEnum::TopAbs_EDGE);
-        EdgeIterator { explorer }
+        todo!()
     }
 
     pub fn solids(&self) -> SolidIterator {

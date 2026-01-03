@@ -1,11 +1,7 @@
 use std::iter::once;
 
 use crate::{
-    angle::{Angle, ToAngle},
-    law_function::law_function_from_graph,
-    make_pipe_shell::make_pipe_shell_with_law_function,
-    primitives::{make_dir, make_point, make_vec, Edge, Face, JoinType, Shape, Shell},
-    Error,
+    Error, WireExplorerIter, angle::{Angle, ToAngle}, law_function::law_function_from_graph, make_pipe_shell::make_pipe_shell_with_law_function, primitives::{Edge, EdgeIterator, Face, JoinType, Shape, Shell, make_dir, make_point, make_vec}
 };
 use cxx::UniquePtr;
 use nalgebra::{point, vector, Point3, Vector3};
@@ -60,12 +56,17 @@ impl Wire {
         }
 
         let (first, last) = (points.first().unwrap(), points.last().unwrap());
+
+        if first == last {
+            return Err(Error::StackedPoints);
+        }
+
         let mut make_wire = ffi::BRepBuilderAPI_MakeWire_ctor();
 
         if points.len() == 2 {
             make_wire.pin_mut().add_edge(&Edge::segment(*first, *last).inner);
         } else {
-            for window in points.windows(2) {
+            for window in points.windows(2).chain(once([*last, *first].as_slice())) {
                 let edge = Edge::segment(window[0], window[1]);
                 make_wire.pin_mut().add_edge(&edge.inner);
             }
@@ -272,6 +273,10 @@ impl Wire {
         let make_face = ffi::BRepBuilderAPI_MakeFace_wire(&self.inner, only_plane);
 
         Face::from_face(make_face.Face())
+    }
+
+    pub fn edges(&self) -> WireExplorerIter {
+        WireExplorerIter::new(self)
     }
 
     // Create a closure-based API
