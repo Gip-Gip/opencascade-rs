@@ -357,7 +357,7 @@ impl Face {
 }
 
 pub struct CompoundFace {
-    inner: UniquePtr<ffi::TopoDS_Compound>,
+    pub inner: UniquePtr<ffi::TopoDS_Compound>,
 }
 
 impl AsRef<CompoundFace> for CompoundFace {

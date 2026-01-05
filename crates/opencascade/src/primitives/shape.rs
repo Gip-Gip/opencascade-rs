@@ -1,11 +1,7 @@
 use crate::{
-    mesh::{Mesh, Mesher},
-    primitives::{
-        make_axis_1, make_axis_2, make_dir, make_point, make_point2d, make_vec, BooleanShape,
-        Compound, Edge, EdgeIterator, Face, FaceIterator, ShapeType, Shell, Solid, SolidIterator,
-        Vertex, Wire, WireIterator,
-    },
-    Error,
+    Error, mesh::{Mesh, Mesher}, primitives::{
+        BooleanShape, Compound, CompoundFace, Edge, EdgeIterator, Face, FaceIterator, ShapeType, Shell, Solid, SolidIterator, Vertex, Wire, WireIterator, make_axis_1, make_axis_2, make_dir, make_point, make_point2d, make_vec
+    }
 };
 use cxx::UniquePtr;
 use nalgebra::{point, Point3, Vector3};
@@ -128,6 +124,22 @@ impl From<Compound> for Shape {
 
 impl From<&Compound> for Shape {
     fn from(compound: &Compound) -> Self {
+        let shape = ffi::cast_compound_to_shape(&compound.inner);
+
+        Self::from_shape(shape)
+    }
+}
+
+impl From<CompoundFace> for Shape {
+    fn from(compound: CompoundFace) -> Self {
+        let shape = ffi::cast_compound_to_shape(&compound.inner);
+
+        Self::from_shape(shape)
+    }
+}
+
+impl From<&CompoundFace> for Shape {
+    fn from(compound: &CompoundFace) -> Self {
         let shape = ffi::cast_compound_to_shape(&compound.inner);
 
         Self::from_shape(shape)
