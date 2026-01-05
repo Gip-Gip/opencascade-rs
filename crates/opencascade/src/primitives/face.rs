@@ -1,11 +1,16 @@
 use crate::{
-    Error, TopExpExplorerIter, angle::Angle, law_function::law_function_from_graph, make_pipe_shell::make_pipe_shell_with_law_function, primitives::{
-        EdgeIterator, JoinType, Shape, Solid, Surface, Wire, make_axis_1, make_point, make_vec
-    }, workplane::Workplane
+    angle::Angle,
+    law_function::law_function_from_graph,
+    make_pipe_shell::make_pipe_shell_with_law_function,
+    primitives::{
+        make_axis_1, make_point, make_vec, EdgeIterator, JoinType, Shape, Solid, Surface, Wire,
+    },
+    workplane::Workplane,
+    Error,
 };
 use cxx::UniquePtr;
 use nalgebra::{point, vector, Point3, UnitVector3, Vector3};
-use opencascade_sys::ffi::{self, TopExp_Explorer};
+use opencascade_sys::ffi::{self};
 
 pub struct Face {
     pub(crate) inner: UniquePtr<ffi::TopoDS_Face>,
@@ -35,7 +40,7 @@ impl Face {
     pub fn from_wire(wire: &Wire) -> Result<Self, Error> {
         let only_plane = false;
         let make_face = ffi::BRepBuilderAPI_MakeFace_wire(&wire.inner, only_plane);
- 
+
         Self::from_make_face(make_face)
     }
 

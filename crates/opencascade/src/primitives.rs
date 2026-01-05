@@ -129,9 +129,7 @@ impl EdgeIterator {
     pub fn new(shape: &Shape) -> Self {
         let explorer_iter = TopExpExplorerIter::new(shape, ffi::TopAbs_ShapeEnum::TopAbs_EDGE);
 
-        Self {
-            explorer_iter
-        }
+        Self { explorer_iter }
     }
 
     pub fn parallel_to(

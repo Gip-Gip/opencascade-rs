@@ -1,7 +1,11 @@
 use crate::{
-    Error, mesh::{Mesh, Mesher}, primitives::{
-        BooleanShape, Compound, CompoundFace, Edge, EdgeIterator, Face, FaceIterator, ShapeType, Shell, Solid, SolidIterator, Vertex, Wire, WireIterator, make_axis_1, make_axis_2, make_dir, make_point, make_point2d, make_vec
-    }
+    mesh::{Mesh, Mesher},
+    primitives::{
+        make_axis_1, make_axis_2, make_dir, make_point, make_point2d, make_vec, BooleanShape,
+        Compound, CompoundFace, Edge, EdgeIterator, Face, FaceIterator, ShapeType, Shell, Solid,
+        SolidIterator, Vertex, Wire, WireIterator,
+    },
+    Error,
 };
 use cxx::UniquePtr;
 use nalgebra::{point, Point3, Vector3};
@@ -678,7 +682,7 @@ impl Shape {
     }
 
     pub fn edges(&self) -> EdgeIterator {
-        let explorer = ffi::TopExp_Explorer_ctor(&self.inner, ffi::TopAbs_ShapeEnum::TopAbs_EDGE);
+        let _explorer = ffi::TopExp_Explorer_ctor(&self.inner, ffi::TopAbs_ShapeEnum::TopAbs_EDGE);
         todo!()
     }
 

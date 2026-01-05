@@ -1,7 +1,11 @@
 use std::iter::once;
 
 use crate::{
-    Error, WireExplorerIter, angle::{Angle, ToAngle}, law_function::law_function_from_graph, make_pipe_shell::make_pipe_shell_with_law_function, primitives::{Edge, EdgeIterator, Face, JoinType, Shape, Shell, make_dir, make_point, make_vec}
+    angle::{Angle, ToAngle},
+    law_function::law_function_from_graph,
+    make_pipe_shell::make_pipe_shell_with_law_function,
+    primitives::{make_dir, make_point, make_vec, Edge, Face, JoinType, Shape, Shell},
+    Error, WireExplorerIter,
 };
 use cxx::UniquePtr;
 use nalgebra::{point, vector, Point3, Vector3};
@@ -40,7 +44,9 @@ impl Wire {
         Self { inner }
     }
 
-    fn from_make_wire(mut make_wire: UniquePtr<ffi::BRepBuilderAPI_MakeWire>) -> Result<Self, Error> {
+    fn from_make_wire(
+        mut make_wire: UniquePtr<ffi::BRepBuilderAPI_MakeWire>,
+    ) -> Result<Self, Error> {
         if !make_wire.IsDone() {
             return Err(Error::NotDone);
         }
@@ -84,7 +90,7 @@ impl Wire {
 
         Self::from_make_wire(make_wire)
     }
-    
+
     pub fn from_edges_consuming(edges: impl IntoIterator<Item = Edge>) -> Result<Self, Error> {
         let mut make_wire = ffi::BRepBuilderAPI_MakeWire_ctor();
 

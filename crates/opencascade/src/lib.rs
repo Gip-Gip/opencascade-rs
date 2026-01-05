@@ -1,11 +1,11 @@
 use std::sync::LazyLock;
 
+use crate::primitives::{Edge, Shape, Wire};
 use cxx::UniquePtr;
 use nalgebra::{vector, Point3, RealField, Scalar, UnitQuaternion, UnitVector3, Vector3};
 use opencascade_sys::ffi;
 use simba::scalar::SubsetOf;
 use thiserror::Error;
-use crate::primitives::{Edge, Shape, Wire};
 
 pub mod angle;
 pub mod bounding_box;
@@ -135,13 +135,13 @@ impl<F: Scalar + RealField + Clone + Copy> TandR<F> {
     }
 
     pub fn from_rotation_between(a: &UnitVector3<F>, b: &UnitVector3<F>) -> Self {
-        let rotation_quat = match UnitQuaternion::rotation_between(&a, &b) {
+        let rotation_quat = match UnitQuaternion::rotation_between(a, b) {
             Some(quat) => quat,
             None => {
                 let quat_1 = INTER_QUAT.cast();
                 let inter_norm = quat_1 * a;
 
-                let quat_2 = UnitQuaternion::rotation_between(&inter_norm, &b).unwrap();
+                let quat_2 = UnitQuaternion::rotation_between(&inter_norm, b).unwrap();
 
                 quat_2 * quat_1
             },
@@ -152,13 +152,13 @@ impl<F: Scalar + RealField + Clone + Copy> TandR<F> {
 
     pub fn transform_point(&self, mut point: Point3<F>) -> Point3<F> {
         if self.inverse {
-            point = point + self.translation;
+            point += self.translation;
             point = self.rotation_quat * point;
 
             point
         } else {
             point = self.rotation_quat * point;
-            point = point + self.translation;
+            point += self.translation;
 
             point
         }

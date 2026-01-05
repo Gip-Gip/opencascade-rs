@@ -1,5 +1,6 @@
 use crate::{
-    BASE_NORMAL, Error, TandR, X_NORMAL, Y_NORMAL, primitives::{Edge, Wire}
+    primitives::{Edge, Wire},
+    Error, TandR, BASE_NORMAL, X_NORMAL, Y_NORMAL,
 };
 use nalgebra::{point, Point3, UnitQuaternion, UnitVector3, Vector3};
 

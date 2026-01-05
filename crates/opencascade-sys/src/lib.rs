@@ -1098,12 +1098,11 @@ pub mod ffi {
         pub fn IsDone(self: &BRepBuilderAPI_GTransform) -> bool;
 
         type BRepTools_WireExplorer;
-        
+
         // Wire explorer
         #[cxx_name = "construct_unique"]
-        pub fn BRepTools_WireExplorer_ctor(
-            wire: &TopoDS_Wire,
-        ) -> UniquePtr<BRepTools_WireExplorer>;
+        pub fn BRepTools_WireExplorer_ctor(wire: &TopoDS_Wire)
+            -> UniquePtr<BRepTools_WireExplorer>;
 
         pub fn More(self: &BRepTools_WireExplorer) -> bool;
         pub fn Next(self: Pin<&mut BRepTools_WireExplorer>);
