@@ -106,7 +106,7 @@ impl WireExplorerIter {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct TandR<F: Scalar + RealField + Clone + Copy> {
     pub translation: Vector3<F>,
     pub rotation_quat: UnitQuaternion<F>,
