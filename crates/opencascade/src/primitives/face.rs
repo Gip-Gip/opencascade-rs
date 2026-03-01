@@ -1,12 +1,7 @@
 use crate::{
-    angle::Angle,
-    law_function::law_function_from_graph,
-    make_pipe_shell::make_pipe_shell_with_law_function,
-    primitives::{
-        make_axis_1, make_point, make_vec, EdgeIterator, JoinType, Shape, Solid, Surface, Wire,
-    },
-    workplane::Workplane,
-    Error,
+    Error, TandR, angle::Angle, law_function::law_function_from_graph, make_pipe_shell::make_pipe_shell_with_law_function, primitives::{
+        EdgeIterator, JoinType, Shape, Solid, Surface, Wire, make_axis_1, make_point, make_vec
+    }, workplane::Workplane
 };
 use cxx::UniquePtr;
 use nalgebra::{point, vector, Point3, UnitVector3, Vector3};
@@ -384,6 +379,18 @@ impl From<Face> for CompoundFace {
     }
 }
 
+impl Clone for CompoundFace {
+    fn clone(&self) -> Self {
+        let shape = ffi::cast_compound_to_shape(&self.inner);
+
+        let mut copier = ffi::BRepBuilderAPI_Copy_new(&shape, true, false);
+
+        let new_shape = copier.pin_mut().Shape();
+
+        Self::from_compound(ffi::TopoDS_cast_to_compound(new_shape))
+    }
+}
+
 impl CompoundFace {
     pub(crate) fn from_compound(compound: &ffi::TopoDS_Compound) -> Self {
         let inner = ffi::TopoDS_Compound_to_owned(compound);
@@ -481,6 +488,20 @@ impl CompoundFace {
         shape.set_global_translation(translation);
 
         let compound = ffi::TopoDS_cast_to_compound(&shape.inner);
+        *self = Self::from_compound(compound);
+    }
+
+    pub fn transform(&mut self, tandr: &TandR<f64>) {
+        let shape = ffi::cast_compound_to_shape(&self.inner);
+
+        let transform: UniquePtr<ffi::gp_Trsf> = tandr.into();
+
+        let mut transformer = ffi::BRepBuilderAPI_Transform_ctor(shape, &transform, false);
+
+        let new_shape = transformer.pin_mut().Shape();
+
+        let compound = ffi::TopoDS_cast_to_compound(new_shape);
+
         *self = Self::from_compound(compound);
     }
 }

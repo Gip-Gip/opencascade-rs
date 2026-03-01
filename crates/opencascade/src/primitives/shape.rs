@@ -156,6 +156,18 @@ impl From<BooleanShape> for Shape {
     }
 }
 
+impl Clone for Shape {
+    fn clone(&self) -> Self {
+        let shape = &self.inner;
+
+        let mut copier = ffi::BRepBuilderAPI_Copy_new(shape, true, false);
+        
+        let new_shape = copier.pin_mut().Shape();
+
+        Self::from_shape(new_shape)
+    }
+}
+
 pub struct SphereBuilder {
     center: Point3<f64>,
     radius: f64,

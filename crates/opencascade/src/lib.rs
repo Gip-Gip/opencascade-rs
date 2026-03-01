@@ -3,7 +3,7 @@ use std::sync::LazyLock;
 use crate::primitives::{Edge, Shape, Wire};
 use cxx::UniquePtr;
 use nalgebra::{vector, Point3, RealField, Scalar, UnitQuaternion, UnitVector3, Vector3};
-use opencascade_sys::ffi;
+use opencascade_sys::ffi::{self, gp_Trsf};
 use simba::scalar::SubsetOf;
 use thiserror::Error;
 
@@ -194,5 +194,32 @@ impl<F: Scalar + RealField + Clone + Copy> TandR<F> {
             rotation_quat: self.rotation_quat.cast(),
             inverse: self.inverse,
         }
+    }
+}
+
+impl From<&TandR<f64>> for UniquePtr<gp_Trsf> {
+    fn from(value: &TandR<f64>) -> Self {
+        let is_inverse = value.inverse;
+
+        let non_inverse_tandr = match is_inverse {
+            true => value.inverse(),
+            false => *value,
+        };
+
+        let mut occ_transform = ffi::new_transform();
+
+        let vec = non_inverse_tandr.translation;
+        let quat = non_inverse_tandr.rotation_quat.into_inner();
+
+        let occ_vec = ffi::new_vec(vec.x, vec.y, vec.x);
+        let occ_quat = ffi::new_quaternion(quat.i, quat.j, quat.k, quat.w);
+
+        occ_transform.pin_mut().SetTransformation(&occ_quat, &occ_vec);
+
+        if is_inverse {
+            occ_transform.pin_mut().Invert();
+        }
+
+        occ_transform
     }
 }

@@ -352,6 +352,11 @@ pub mod ffi {
         pub fn Y(self: &gp_Vec) -> f64;
         pub fn Z(self: &gp_Vec) -> f64;
 
+        type gp_Quaternion;
+
+        #[cxx_name = "construct_unique"]
+        pub fn new_quaternion(theX: f64, theY: f64, theZ: f64, theW: f64) -> UniquePtr<gp_Quaternion>;
+
         // Edge types
         type GeomAbs_CurveType;
 
@@ -578,6 +583,13 @@ pub mod ffi {
         pub fn Shape(self: Pin<&mut BRepBuilderAPI_MakeFace>) -> &TopoDS_Shape;
         pub fn Build(self: Pin<&mut BRepBuilderAPI_MakeFace>, progress: &Message_ProgressRange);
         pub fn IsDone(self: &BRepBuilderAPI_MakeFace) -> bool;
+
+        type BRepBuilderAPI_Copy;
+
+        #[cxx_name = "construct_unique"]
+        pub fn BRepBuilderAPI_Copy_new(S: &TopoDS_Shape, copyGeom: bool, copyMesh: bool) -> UniquePtr<BRepBuilderAPI_Copy>;
+        
+        pub fn Shape(self: Pin<&mut BRepBuilderAPI_Copy>) -> &TopoDS_Shape;
 
         // BRepAdaptor
         type BRepAdaptor_Curve;
@@ -1035,7 +1047,9 @@ pub mod ffi {
         pub fn SetRotation(self: Pin<&mut gp_Trsf>, axis: &gp_Ax1, angle: f64);
         pub fn SetScale(self: Pin<&mut gp_Trsf>, point: &gp_Pnt, scale: f64);
         pub fn SetTranslation(self: Pin<&mut gp_Trsf>, point1: &gp_Pnt, point2: &gp_Pnt);
+        pub fn SetTransformation(self: Pin<&mut gp_Trsf>, R: &gp_Quaternion, theT: &gp_Vec);
         pub fn Value(self: &gp_Trsf, the_row: i32, the_col: i32) -> f64;
+        pub fn Invert(self: Pin<&mut gp_Trsf>);
 
         #[cxx_name = "SetTranslationPart"]
         pub fn set_translation_vec(self: Pin<&mut gp_Trsf>, translation: &gp_Vec);
