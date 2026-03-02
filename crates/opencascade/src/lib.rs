@@ -2,8 +2,8 @@ use std::sync::LazyLock;
 
 use crate::primitives::{Edge, Shape, Wire};
 use cxx::UniquePtr;
-use nalgebra::{vector, Point3, RealField, Scalar, UnitQuaternion, UnitVector3, Vector3};
-use opencascade_sys::ffi::{self, gp_Trsf};
+use nalgebra::{Matrix4, Point3, RealField, Scalar, UnitQuaternion, UnitVector3, Vector3, vector};
+use opencascade_sys::ffi::{self, TopoDS_Shape, gp_Trsf};
 use simba::scalar::SubsetOf;
 use thiserror::Error;
 
@@ -150,6 +150,12 @@ impl<F: Scalar + RealField + Clone + Copy> TandR<F> {
         Self { translation: Vector3::zeros(), rotation_quat, inverse: false }
     }
 
+    pub fn from_axis_angle(axis: &UnitVector3<F>, angle: F) -> Self {
+        let rotation_quat = UnitQuaternion::from_axis_angle(axis, angle);
+
+        Self { translation: Vector3::zeros(), rotation_quat, inverse: false }
+    }
+
     pub fn transform_point(&self, mut point: Point3<F>) -> Point3<F> {
         if self.inverse {
             point += self.translation;
@@ -197,6 +203,18 @@ impl<F: Scalar + RealField + Clone + Copy> TandR<F> {
     }
 }
 
+impl TandR<f64> {
+    pub fn transform_shape(&self, shape: &ffi::TopoDS_Shape) -> UniquePtr<TopoDS_Shape>{
+        let transform: UniquePtr<ffi::gp_Trsf> = self.into();
+
+        let mut transformer = ffi::BRepBuilderAPI_Transform_ctor(shape, &transform, false);
+
+        let new_shape = transformer.pin_mut().Shape();
+
+        ffi::TopoDS_Shape_to_owned(new_shape)
+    }
+}
+
 impl From<&TandR<f64>> for UniquePtr<gp_Trsf> {
     fn from(value: &TandR<f64>) -> Self {
         let is_inverse = value.inverse;
@@ -209,9 +227,9 @@ impl From<&TandR<f64>> for UniquePtr<gp_Trsf> {
         let mut occ_transform = ffi::new_transform();
 
         let vec = non_inverse_tandr.translation;
-        let quat = non_inverse_tandr.rotation_quat.into_inner();
+        let quat = non_inverse_tandr.rotation_quat;
 
-        let occ_vec = ffi::new_vec(vec.x, vec.y, vec.x);
+        let occ_vec = ffi::new_vec(vec.x, vec.y, vec.z);
         let occ_quat = ffi::new_quaternion(quat.i, quat.j, quat.k, quat.w);
 
         occ_transform.pin_mut().SetTransformation(&occ_quat, &occ_vec);

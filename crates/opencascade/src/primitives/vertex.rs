@@ -24,6 +24,11 @@ impl AsRef<Vertex> for Vertex {
 }
 
 impl Vertex {
+    pub(crate) fn from_vertex(vertex: &ffi::TopoDS_Vertex) -> Self {
+        let inner = ffi::TopoDS_Vertex_to_owned(vertex);
+
+        Self { inner }
+    }
     pub fn new(point: Point3<f64>) -> Self {
         let mut make_vertex = ffi::BRepBuilderAPI_MakeVertex_gp_Pnt(&make_point(point));
         let vertex = make_vertex.pin_mut().Vertex();

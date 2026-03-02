@@ -493,14 +493,15 @@ impl CompoundFace {
 
     pub fn transform(&mut self, tandr: &TandR<f64>) {
         let shape = ffi::cast_compound_to_shape(&self.inner);
+        
+        //let transform: UniquePtr<ffi::gp_Trsf> = tandr.into();
 
-        let transform: UniquePtr<ffi::gp_Trsf> = tandr.into();
+        //let mut transformer = ffi::BRepBuilderAPI_Transform_ctor(shape, &transform, false);
 
-        let mut transformer = ffi::BRepBuilderAPI_Transform_ctor(shape, &transform, false);
+        //let new_shape = transformer.pin_mut().Shape();
 
-        let new_shape = transformer.pin_mut().Shape();
-
-        let compound = ffi::TopoDS_cast_to_compound(new_shape);
+        let new_shape = tandr.transform_shape(shape);
+        let compound = ffi::TopoDS_cast_to_compound(&new_shape);
 
         *self = Self::from_compound(compound);
     }
