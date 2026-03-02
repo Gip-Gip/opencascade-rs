@@ -149,9 +149,9 @@ impl Edge {
         point![point.X(), point.Y(), point.Z()]
     }
 
-    pub fn approximation_segments(&self) -> ApproximationSegmentIterator {
+    pub fn approximation_segments(&self, tolerance: f64) -> ApproximationSegmentIterator {
         let adaptor_curve = ffi::BRepAdaptor_Curve_ctor(&self.inner);
-        let approximator = ffi::GCPnts_TangentialDeflection_ctor(&adaptor_curve, 0.1, 0.1);
+        let approximator = ffi::GCPnts_TangentialDeflection_ctor(&adaptor_curve, 0.1, 0.1, 2, tolerance, tolerance);
 
         ApproximationSegmentIterator { count: 1, approximator }
     }

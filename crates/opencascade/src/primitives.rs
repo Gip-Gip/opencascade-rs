@@ -113,6 +113,26 @@ pub fn make_axis_2(origin: Point3<f64>, dir: Vector3<f64>) -> UniquePtr<ffi::gp_
     ffi::gp_Ax2_ctor(&make_point(origin), &make_dir(dir))
 }
 
+pub struct VertexIterator {
+    explorer_iter: TopExpExplorerIter,
+}
+
+impl Iterator for VertexIterator {
+    type Item = Vertex;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.explorer_iter.next().map(|shape| shape.into())
+    }
+}
+
+impl VertexIterator {
+    pub fn new(shape: &Shape) -> Self {
+        let explorer_iter = TopExpExplorerIter::new(shape, ffi::TopAbs_ShapeEnum::TopAbs_VERTEX);
+
+        Self {explorer_iter}
+    }
+}
+
 pub struct EdgeIterator {
     explorer_iter: TopExpExplorerIter,
 }

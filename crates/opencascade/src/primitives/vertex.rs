@@ -1,7 +1,7 @@
-use crate::primitives::make_point;
+use crate::primitives::{Shape, make_point};
 use cxx::UniquePtr;
-use nalgebra::Point3;
-use opencascade_sys::ffi;
+use nalgebra::{Point3, point};
+use opencascade_sys::ffi::{self};
 
 pub struct Vertex {
     pub(crate) inner: UniquePtr<ffi::TopoDS_Vertex>,
@@ -35,5 +35,29 @@ impl Vertex {
         let inner = ffi::TopoDS_Vertex_to_owned(vertex);
 
         Self { inner }
+    }
+
+    pub fn coords(&self) -> Point3<f64> {
+        let vertex = &self.inner;
+
+        let coords = ffi::BRep_Tool_Pnt(vertex);
+
+        point![coords.X(), coords.Y(), coords.Z()]
+    }
+}
+
+impl From<Shape> for Vertex {
+    fn from(value: Shape) -> Self {
+        let topo_vertex = ffi::TopoDS_cast_to_vertex(&value.inner);
+
+        Vertex::from_vertex(topo_vertex)
+    }
+}
+
+impl From<&Shape> for Vertex {
+    fn from(value: &Shape) -> Self {
+        let topo_vertex = ffi::TopoDS_cast_to_vertex(&value.inner);
+
+        Vertex::from_vertex(topo_vertex)
     }
 }

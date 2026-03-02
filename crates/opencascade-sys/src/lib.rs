@@ -1357,6 +1357,9 @@ pub mod ffi {
             curve: &BRepAdaptor_Curve,
             angular_deflection: f64,
             curvature_deflection: f64,
+            min_points: i32,
+            tolerance: f64,
+            min_len: f64
         ) -> UniquePtr<GCPnts_TangentialDeflection>;
         pub fn NbPoints(self: &GCPnts_TangentialDeflection) -> i32;
         pub fn GCPnts_TangentialDeflection_Value(

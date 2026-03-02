@@ -1,6 +1,6 @@
 use crate::{
     Error, TandR, TopExpExplorerIter, mesh::{Mesh, Mesher}, primitives::{
-        BooleanShape, Compound, CompoundFace, Edge, EdgeIterator, Face, FaceIterator, ShapeType, Shell, Solid, SolidIterator, Vertex, Wire, WireIterator, make_axis_1, make_axis_2, make_dir, make_point, make_point2d, make_vec
+        BooleanShape, Compound, CompoundFace, Edge, EdgeIterator, Face, FaceIterator, ShapeType, Shell, Solid, SolidIterator, Vertex, VertexIterator, Wire, WireIterator, make_axis_1, make_axis_2, make_dir, make_point, make_point2d, make_vec
     }
 };
 use cxx::UniquePtr;
@@ -697,6 +697,10 @@ impl Shape {
     pub fn solids(&self) -> SolidIterator {
         let explorer = ffi::TopExp_Explorer_ctor(&self.inner, ffi::TopAbs_ShapeEnum::TopAbs_SOLID);
         SolidIterator { explorer }
+    }
+    
+    pub fn vertices(&self) -> VertexIterator {
+        VertexIterator::new(self)
     }
 
     pub fn wires(&self) -> WireIterator {
