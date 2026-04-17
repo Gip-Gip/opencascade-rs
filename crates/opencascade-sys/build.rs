@@ -42,9 +42,16 @@ fn main() {
 
     let occt_config = OcctConfig::detect();
 
-    println!("cargo:rustc-link-search=native={}", occt_config.library_dir.to_str().unwrap());
+    println!(
+        "cargo:rustc-link-search=native={}",
+        occt_config.library_dir.to_str().unwrap()
+    );
 
-    let lib_type = if occt_config.is_dynamic { "dylib" } else { "static" };
+    let lib_type = if occt_config.is_dynamic {
+        "dylib"
+    } else {
+        "static"
+    };
     for lib in OCCT_LIBS {
         println!("cargo:rustc-link-lib={lib_type}={lib}");
     }
@@ -140,7 +147,11 @@ impl OcctConfig {
                        version_major, version_minor, OCCT_VERSION.0, OCCT_VERSION.1);
             }
 
-            Self { include_dir, library_dir, is_dynamic }
+            Self {
+                include_dir,
+                library_dir,
+                is_dynamic,
+            }
         } else {
             panic!("OpenCASCADE library found but something wrong with config.");
         }

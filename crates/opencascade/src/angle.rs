@@ -1,5 +1,7 @@
-use nalgebra::{vector, Vector3};
-use std::ops::{Div, Mul};
+use nalgebra::vector;
+use nalgebra::Vector3;
+use std::ops::Div;
+use std::ops::Mul;
 
 #[derive(Debug, Copy, Clone)]
 pub enum Angle {
@@ -79,15 +81,27 @@ impl RVec {
     }
 
     pub fn x(x: Angle) -> Self {
-        RVec { x, y: 0.degrees(), z: 0.degrees() }
+        RVec {
+            x,
+            y: 0.degrees(),
+            z: 0.degrees(),
+        }
     }
 
     pub fn y(y: Angle) -> Self {
-        RVec { x: 0.degrees(), y, z: 0.degrees() }
+        RVec {
+            x: 0.degrees(),
+            y,
+            z: 0.degrees(),
+        }
     }
 
     pub fn z(z: Angle) -> Self {
-        RVec { x: 0.degrees(), y: 0.degrees(), z }
+        RVec {
+            x: 0.degrees(),
+            y: 0.degrees(),
+            z,
+        }
     }
 }
 

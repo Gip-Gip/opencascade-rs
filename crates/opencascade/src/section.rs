@@ -9,7 +9,9 @@ pub struct Section {
 impl Section {
     /// Create a new `Section` to intersect `target` by `tool`.
     pub fn new(target: &Shape, tool: &Shape) -> Section {
-        Section { inner: ffi::BRepAlgoAPI_Section_ctor(&target.inner, &tool.inner) }
+        Section {
+            inner: ffi::BRepAlgoAPI_Section_ctor(&target.inner, &tool.inner),
+        }
     }
 
     /// Get the edges of the resulting intersection.
@@ -36,10 +38,9 @@ pub fn edges(target: &Shape, tool: &Shape) -> Vec<Shape> {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::{
-        primitives::{IntoShape, ShapeType},
-        workplane::Workplane,
-    };
+    use crate::primitives::IntoShape;
+    use crate::primitives::ShapeType;
+    use crate::workplane::Workplane;
     use nalgebra::point;
 
     #[test]

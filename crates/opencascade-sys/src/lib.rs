@@ -355,7 +355,12 @@ pub mod ffi {
         type gp_Quaternion;
 
         #[cxx_name = "construct_unique"]
-        pub fn new_quaternion(theX: f64, theY: f64, theZ: f64, theW: f64) -> UniquePtr<gp_Quaternion>;
+        pub fn new_quaternion(
+            theX: f64,
+            theY: f64,
+            theZ: f64,
+            theW: f64,
+        ) -> UniquePtr<gp_Quaternion>;
 
         // Edge types
         type GeomAbs_CurveType;
@@ -587,8 +592,12 @@ pub mod ffi {
         type BRepBuilderAPI_Copy;
 
         #[cxx_name = "construct_unique"]
-        pub fn BRepBuilderAPI_Copy_new(S: &TopoDS_Shape, copyGeom: bool, copyMesh: bool) -> UniquePtr<BRepBuilderAPI_Copy>;
-        
+        pub fn BRepBuilderAPI_Copy_new(
+            S: &TopoDS_Shape,
+            copyGeom: bool,
+            copyMesh: bool,
+        ) -> UniquePtr<BRepBuilderAPI_Copy>;
+
         pub fn Shape(self: Pin<&mut BRepBuilderAPI_Copy>) -> &TopoDS_Shape;
 
         // BRepAdaptor
@@ -1048,10 +1057,21 @@ pub mod ffi {
         pub fn SetScale(self: Pin<&mut gp_Trsf>, point: &gp_Pnt, scale: f64);
         pub fn SetTranslation(self: Pin<&mut gp_Trsf>, point1: &gp_Pnt, point2: &gp_Pnt);
         pub fn SetTransformation(self: Pin<&mut gp_Trsf>, R: &gp_Quaternion, theT: &gp_Vec);
-        pub fn SetValues(self: Pin<&mut gp_Trsf>,
-            a11: f64, a12: f64, a13: f64, a14: f64,
-            a21: f64, a22: f64, a23: f64, a24: f64,
-            a31: f64, a32: f64, a33: f64, a34: f64);
+        pub fn SetValues(
+            self: Pin<&mut gp_Trsf>,
+            a11: f64,
+            a12: f64,
+            a13: f64,
+            a14: f64,
+            a21: f64,
+            a22: f64,
+            a23: f64,
+            a24: f64,
+            a31: f64,
+            a32: f64,
+            a33: f64,
+            a34: f64,
+        );
         pub fn Value(self: &gp_Trsf, the_row: i32, the_col: i32) -> f64;
         pub fn Invert(self: Pin<&mut gp_Trsf>);
 
@@ -1359,7 +1379,7 @@ pub mod ffi {
             curvature_deflection: f64,
             min_points: i32,
             tolerance: f64,
-            min_len: f64
+            min_len: f64,
         ) -> UniquePtr<GCPnts_TangentialDeflection>;
         pub fn NbPoints(self: &GCPnts_TangentialDeflection) -> i32;
         pub fn GCPnts_TangentialDeflection_Value(

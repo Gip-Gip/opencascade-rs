@@ -1,12 +1,36 @@
-use crate::{
-    Error, TandR, TopExpExplorerIter, mesh::{Mesh, Mesher}, primitives::{
-        BooleanShape, Compound, CompoundFace, Edge, EdgeIterator, Face, FaceIterator, ShapeType, Shell, Solid, SolidIterator, Vertex, VertexIterator, Wire, WireIterator, make_axis_1, make_axis_2, make_dir, make_point, make_point2d, make_vec
-    }
-};
+use crate::mesh::Mesh;
+use crate::mesh::Mesher;
+use crate::primitives::make_axis_1;
+use crate::primitives::make_axis_2;
+use crate::primitives::make_dir;
+use crate::primitives::make_point;
+use crate::primitives::make_point2d;
+use crate::primitives::make_vec;
+use crate::primitives::BooleanShape;
+use crate::primitives::Compound;
+use crate::primitives::CompoundFace;
+use crate::primitives::Edge;
+use crate::primitives::EdgeIterator;
+use crate::primitives::Face;
+use crate::primitives::FaceIterator;
+use crate::primitives::ShapeType;
+use crate::primitives::Shell;
+use crate::primitives::Solid;
+use crate::primitives::SolidIterator;
+use crate::primitives::Vertex;
+use crate::primitives::VertexIterator;
+use crate::primitives::Wire;
+use crate::primitives::WireIterator;
+use crate::Error;
+use crate::TandR;
+use crate::TopExpExplorerIter;
 use cxx::UniquePtr;
-use nalgebra::{point, Point3, Vector3};
+use nalgebra::point;
+use nalgebra::Point3;
+use nalgebra::Vector3;
 use opencascade_sys::ffi;
-use std::{cmp::Ordering, path::Path};
+use std::cmp::Ordering;
+use std::path::Path;
 
 pub struct Shape {
     pub(crate) inner: UniquePtr<ffi::TopoDS_Shape>,
@@ -157,7 +181,7 @@ impl Clone for Shape {
         let shape = &self.inner;
 
         let mut copier = ffi::BRepBuilderAPI_Copy_new(shape, true, false);
-        
+
         let new_shape = copier.pin_mut().Shape();
 
         Self::from_shape(new_shape)
@@ -398,7 +422,11 @@ impl Shape {
     }
 
     pub fn sphere(radius: f64) -> SphereBuilder {
-        SphereBuilder { center: Point3::origin(), radius, z_angle: std::f64::consts::TAU }
+        SphereBuilder {
+            center: Point3::origin(),
+            radius,
+            z_angle: std::f64::consts::TAU,
+        }
     }
 
     pub fn cone() -> ConeBuilder {
@@ -471,13 +499,17 @@ impl Shape {
         let mut array = ffi::TColgp_Array1OfPnt2d_ctor(1, radius_values.len() as i32);
 
         for (index, (t, radius)) in radius_values.into_iter().enumerate() {
-            array.pin_mut().SetValue(index as i32 + 1, &make_point2d(point![t, radius]));
+            array
+                .pin_mut()
+                .SetValue(index as i32 + 1, &make_point2d(point![t, radius]));
         }
 
         let mut make_fillet = ffi::BRepFilletAPI_MakeFillet_ctor(&self.inner);
 
         for edge in edges.into_iter() {
-            make_fillet.pin_mut().variable_add_edge(&array, &edge.as_ref().inner);
+            make_fillet
+                .pin_mut()
+                .variable_add_edge(&array, &edge.as_ref().inner);
         }
 
         Self::from_shape(make_fillet.pin_mut().Shape())
@@ -492,7 +524,9 @@ impl Shape {
         let mut make_chamfer = ffi::BRepFilletAPI_MakeChamfer_ctor(&self.inner);
 
         for edge in edges.into_iter() {
-            make_chamfer.pin_mut().add_edge(distance, &edge.as_ref().inner);
+            make_chamfer
+                .pin_mut()
+                .add_edge(distance, &edge.as_ref().inner);
         }
 
         Self::from_shape(make_chamfer.pin_mut().Shape())
@@ -531,13 +565,18 @@ impl Shape {
     pub fn read_step(path: impl AsRef<Path>) -> Result<Self, Error> {
         let mut reader = ffi::STEPControl_Reader_ctor();
 
-        let status = ffi::read_step(reader.pin_mut(), path.as_ref().to_string_lossy().to_string());
+        let status = ffi::read_step(
+            reader.pin_mut(),
+            path.as_ref().to_string_lossy().to_string(),
+        );
 
         if status != ffi::IFSelect_ReturnStatus::IFSelect_RetDone {
             return Err(Error::StepReadFailed);
         }
 
-        reader.pin_mut().TransferRoots(&ffi::Message_ProgressRange_ctor());
+        reader
+            .pin_mut()
+            .TransferRoots(&ffi::Message_ProgressRange_ctor());
 
         let inner = ffi::one_shape_step(&reader);
 
@@ -553,7 +592,10 @@ impl Shape {
             return Err(Error::StepWriteFailed);
         }
 
-        let status = ffi::write_step(writer.pin_mut(), path.as_ref().to_string_lossy().to_string());
+        let status = ffi::write_step(
+            writer.pin_mut(),
+            path.as_ref().to_string_lossy().to_string(),
+        );
 
         if status != ffi::IFSelect_ReturnStatus::IFSelect_RetDone {
             return Err(Error::StepWriteFailed);
@@ -565,9 +607,14 @@ impl Shape {
     pub fn read_iges(path: impl AsRef<Path>) -> Result<Self, Error> {
         let mut reader = ffi::IGESControl_Reader_ctor();
 
-        let status = ffi::read_iges(reader.pin_mut(), path.as_ref().to_string_lossy().to_string());
+        let status = ffi::read_iges(
+            reader.pin_mut(),
+            path.as_ref().to_string_lossy().to_string(),
+        );
 
-        reader.pin_mut().TransferRoots(&ffi::Message_ProgressRange_ctor());
+        reader
+            .pin_mut()
+            .TransferRoots(&ffi::Message_ProgressRange_ctor());
 
         if status != ffi::IFSelect_ReturnStatus::IFSelect_RetDone {
             return Err(Error::IgesReadFailed);
@@ -588,8 +635,10 @@ impl Shape {
         }
 
         ffi::compute_model(writer.pin_mut());
-        let success =
-            ffi::write_iges(writer.pin_mut(), path.as_ref().to_string_lossy().to_string());
+        let success = ffi::write_iges(
+            writer.pin_mut(),
+            path.as_ref().to_string_lossy().to_string(),
+        );
 
         if success {
             Ok(())
@@ -677,7 +726,9 @@ impl Shape {
 
         let location = ffi::TopLoc_Location_from_transform(&transform);
 
-        self.inner.pin_mut().set_global_translation(&location, false);
+        self.inner
+            .pin_mut()
+            .set_global_translation(&location, false);
     }
 
     pub fn mesh(&self) -> Result<Mesh, Error> {
@@ -698,7 +749,7 @@ impl Shape {
         let explorer = ffi::TopExp_Explorer_ctor(&self.inner, ffi::TopAbs_ShapeEnum::TopAbs_SOLID);
         SolidIterator { explorer }
     }
-    
+
     pub fn vertices(&self) -> VertexIterator {
         VertexIterator::new(self)
     }
@@ -761,7 +812,13 @@ impl Shape {
         }
 
         let mut solid_maker = ffi::BRepOffsetAPI_MakeThickSolid_ctor();
-        ffi::MakeThickSolidByJoin(solid_maker.pin_mut(), &self.inner, &faces_list, offset, 0.001);
+        ffi::MakeThickSolidByJoin(
+            solid_maker.pin_mut(),
+            &self.inner,
+            &faces_list,
+            offset,
+            0.001,
+        );
 
         Self::from_shape(solid_maker.pin_mut().Shape())
     }
@@ -818,7 +875,9 @@ impl ChamferMaker {
     pub fn new(shape: &Shape) -> Self {
         let make_chamfer = ffi::BRepFilletAPI_MakeChamfer_ctor(&shape.inner);
 
-        Self { inner: make_chamfer }
+        Self {
+            inner: make_chamfer,
+        }
     }
 
     pub fn add_edge(&mut self, distance: f64, edge: &Edge) {

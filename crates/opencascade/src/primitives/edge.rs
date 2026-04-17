@@ -1,6 +1,11 @@
-use crate::primitives::{make_axis_2, make_point, Shape};
+use crate::primitives::make_axis_2;
+use crate::primitives::make_point;
+use crate::primitives::Shape;
 use cxx::UniquePtr;
-use nalgebra::{point, Point3, UnitVector3, Vector3};
+use nalgebra::point;
+use nalgebra::Point3;
+use nalgebra::UnitVector3;
+use nalgebra::Vector3;
 use opencascade_sys::ffi;
 
 use super::make_vec;
@@ -67,7 +72,9 @@ impl Edge {
         let points: Vec<_> = points.into_iter().collect();
         let mut array = ffi::TColgp_HArray1OfPnt_ctor(1, points.len() as i32);
         for (index, point) in points.into_iter().enumerate() {
-            array.pin_mut().SetValue(index as i32 + 1, &make_point(point));
+            array
+                .pin_mut()
+                .SetValue(index as i32 + 1, &make_point(point));
         }
 
         let bezier = ffi::Geom_BezierCurve_ctor_points(&array);
@@ -97,7 +104,9 @@ impl Edge {
         let points: Vec<_> = points.into_iter().collect();
         let mut array = ffi::TColgp_HArray1OfPnt_ctor(1, points.len() as i32);
         for (index, point) in points.into_iter().enumerate() {
-            array.pin_mut().SetValue(index as i32 + 1, &make_point(point));
+            array
+                .pin_mut()
+                .SetValue(index as i32 + 1, &make_point(point));
         }
         let array_handle = ffi::new_HandleTColgpHArray1OfPnt_from_TColgpHArray1OfPnt(array);
 
@@ -105,7 +114,9 @@ impl Edge {
         let tolerance = 1.0e-7;
         let mut interpolate = ffi::GeomAPI_Interpolate_ctor(&array_handle, periodic, tolerance);
         if let Some((t_start, t_end)) = tangents {
-            interpolate.pin_mut().Load(&make_vec(t_start), &make_vec(t_end), true);
+            interpolate
+                .pin_mut()
+                .Load(&make_vec(t_start), &make_vec(t_end), true);
         }
 
         interpolate.pin_mut().Perform();
@@ -151,9 +162,19 @@ impl Edge {
 
     pub fn approximation_segments(&self, tolerance: f64) -> ApproximationSegmentIterator {
         let adaptor_curve = ffi::BRepAdaptor_Curve_ctor(&self.inner);
-        let approximator = ffi::GCPnts_TangentialDeflection_ctor(&adaptor_curve, 0.1, 0.1, 2, tolerance, tolerance);
+        let approximator = ffi::GCPnts_TangentialDeflection_ctor(
+            &adaptor_curve,
+            0.1,
+            0.1,
+            2,
+            tolerance,
+            tolerance,
+        );
 
-        ApproximationSegmentIterator { count: 1, approximator }
+        ApproximationSegmentIterator {
+            count: 1,
+            approximator,
+        }
     }
 
     pub fn tangent_arc(_p1: Vector3<f64>, _tangent: Vector3<f64>, _p3: Vector3<f64>) {}

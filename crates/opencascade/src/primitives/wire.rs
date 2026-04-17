@@ -1,14 +1,24 @@
 use std::iter::once;
 
-use crate::{
-    angle::{Angle, ToAngle},
-    law_function::law_function_from_graph,
-    make_pipe_shell::make_pipe_shell_with_law_function,
-    primitives::{make_dir, make_point, make_vec, Edge, Face, JoinType, Shape, Shell},
-    Error, WireExplorerIter,
-};
+use crate::angle::Angle;
+use crate::angle::ToAngle;
+use crate::law_function::law_function_from_graph;
+use crate::make_pipe_shell::make_pipe_shell_with_law_function;
+use crate::primitives::make_dir;
+use crate::primitives::make_point;
+use crate::primitives::make_vec;
+use crate::primitives::Edge;
+use crate::primitives::Face;
+use crate::primitives::JoinType;
+use crate::primitives::Shape;
+use crate::primitives::Shell;
+use crate::Error;
+use crate::WireExplorerIter;
 use cxx::UniquePtr;
-use nalgebra::{point, vector, Point3, Vector3};
+use nalgebra::point;
+use nalgebra::vector;
+use nalgebra::Point3;
+use nalgebra::Vector3;
 use opencascade_sys::ffi;
 
 pub struct Wire {
@@ -70,7 +80,9 @@ impl Wire {
         let mut make_wire = ffi::BRepBuilderAPI_MakeWire_ctor();
 
         if points.len() == 2 {
-            make_wire.pin_mut().add_edge(&Edge::segment(*first, *last).inner);
+            make_wire
+                .pin_mut()
+                .add_edge(&Edge::segment(*first, *last).inner);
         } else {
             for window in points.windows(2).chain(once([*last, *first].as_slice())) {
                 let edge = Edge::segment(window[0], window[1]);
@@ -259,7 +271,9 @@ impl Wire {
             ffi::gp_Ax1_ctor(&make_point(Point3::origin()), &make_dir(rotation_axis));
         let translation_vec = make_vec(translation);
 
-        transform.pin_mut().SetRotation(&rotation_axis_vec, angle.radians());
+        transform
+            .pin_mut()
+            .SetRotation(&rotation_axis_vec, angle.radians());
         transform.pin_mut().set_translation_vec(&translation_vec);
         let location = ffi::TopLoc_Location_from_transform(&transform);
 

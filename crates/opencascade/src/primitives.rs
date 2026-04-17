@@ -1,5 +1,7 @@
 use cxx::UniquePtr;
-use nalgebra::{Point2, Point3, Vector3};
+use nalgebra::Point2;
+use nalgebra::Point3;
+use nalgebra::Vector3;
 use opencascade_sys::ffi;
 
 mod boolean_shape;
@@ -129,7 +131,7 @@ impl VertexIterator {
     pub fn new(shape: &Shape) -> Self {
         let explorer_iter = TopExpExplorerIter::new(shape, ffi::TopAbs_ShapeEnum::TopAbs_VERTEX);
 
-        Self {explorer_iter}
+        Self { explorer_iter }
     }
 }
 
@@ -161,7 +163,10 @@ impl EdgeIterator {
         self.filter(move |edge| {
             edge.edge_type() == EdgeType::Line
                 && 1.0
-                    - (edge.end_point() - edge.start_point()).normalize().dot(&normalized_dir).abs()
+                    - (edge.end_point() - edge.start_point())
+                        .normalize()
+                        .dot(&normalized_dir)
+                        .abs()
                     < 0.0001
         })
     }

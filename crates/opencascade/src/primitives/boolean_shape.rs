@@ -1,5 +1,7 @@
-use crate::primitives::{Edge, Shape};
-use std::ops::{Deref, DerefMut};
+use crate::primitives::Edge;
+use crate::primitives::Shape;
+use std::ops::Deref;
+use std::ops::DerefMut;
 
 /// The result of running a boolean operation (union, subtraction, intersection)
 /// on two shapes.
@@ -37,7 +39,8 @@ impl BooleanShape {
         &self,
         radius_values: impl IntoIterator<Item = (f64, f64)>,
     ) -> Shape {
-        self.shape.variable_fillet_edges(radius_values, &self.new_edges)
+        self.shape
+            .variable_fillet_edges(radius_values, &self.new_edges)
     }
 
     #[must_use]

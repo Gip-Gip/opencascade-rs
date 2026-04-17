@@ -1,7 +1,8 @@
 use cxx::UniquePtr;
 use opencascade_sys::ffi;
 
-use crate::primitives::{FaceIterator, Wire};
+use crate::primitives::FaceIterator;
+use crate::primitives::Wire;
 
 pub struct Shell {
     pub(crate) inner: UniquePtr<ffi::TopoDS_Shell>,
@@ -48,7 +49,7 @@ impl Shell {
 
         for face in faces {
             let face_shape = ffi::cast_face_to_shape(&face.inner);
-            topods_builder.Add(shell_shape.pin_mut(), face_shape); 
+            topods_builder.Add(shell_shape.pin_mut(), face_shape);
         }
 
         let shell = ffi::TopoDS_cast_to_shell(&shell_shape);

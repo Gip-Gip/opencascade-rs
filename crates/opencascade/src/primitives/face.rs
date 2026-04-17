@@ -1,10 +1,24 @@
-use crate::{
-    Error, TandR, angle::Angle, law_function::law_function_from_graph, make_pipe_shell::make_pipe_shell_with_law_function, primitives::{
-        EdgeIterator, JoinType, Shape, Solid, Surface, Wire, make_axis_1, make_point, make_vec
-    }, workplane::Workplane
-};
+use crate::angle::Angle;
+use crate::law_function::law_function_from_graph;
+use crate::make_pipe_shell::make_pipe_shell_with_law_function;
+use crate::primitives::make_axis_1;
+use crate::primitives::make_point;
+use crate::primitives::make_vec;
+use crate::primitives::EdgeIterator;
+use crate::primitives::JoinType;
+use crate::primitives::Shape;
+use crate::primitives::Solid;
+use crate::primitives::Surface;
+use crate::primitives::Wire;
+use crate::workplane::Workplane;
+use crate::Error;
+use crate::TandR;
 use cxx::UniquePtr;
-use nalgebra::{point, vector, Point3, UnitVector3, Vector3};
+use nalgebra::point;
+use nalgebra::vector;
+use nalgebra::Point3;
+use nalgebra::UnitVector3;
+use nalgebra::Vector3;
 use opencascade_sys::ffi::{self};
 
 pub struct Face {
@@ -112,7 +126,9 @@ impl Face {
     pub fn revolve(&self, origin: Point3<f64>, axis: Vector3<f64>, angle: Option<Angle>) -> Solid {
         let revol_vec = make_axis_1(origin, axis);
 
-        let angle = angle.map(Angle::radians).unwrap_or(std::f64::consts::PI * 2.0);
+        let angle = angle
+            .map(Angle::radians)
+            .unwrap_or(std::f64::consts::PI * 2.0);
         let copy = false;
 
         let inner_shape = ffi::cast_face_to_shape(&self.inner);
@@ -132,14 +148,20 @@ impl Face {
 
         // We use a shape map here to avoid duplicates.
         let mut shape_map = ffi::new_indexed_map_of_shape();
-        ffi::map_shapes(face_shape, ffi::TopAbs_ShapeEnum::TopAbs_VERTEX, shape_map.pin_mut());
+        ffi::map_shapes(
+            face_shape,
+            ffi::TopAbs_ShapeEnum::TopAbs_VERTEX,
+            shape_map.pin_mut(),
+        );
 
         for i in 1..=shape_map.Extent() {
             let vertex = ffi::TopoDS_cast_to_vertex(shape_map.FindKey(i));
             ffi::BRepFilletAPI_MakeFillet2d_add_fillet(make_fillet.pin_mut(), vertex, radius);
         }
 
-        make_fillet.pin_mut().Build(&ffi::Message_ProgressRange_ctor());
+        make_fillet
+            .pin_mut()
+            .Build(&ffi::Message_ProgressRange_ctor());
 
         let result_shape = make_fillet.pin_mut().Shape();
         let result_face = ffi::TopoDS_cast_to_face(result_shape);
@@ -158,7 +180,11 @@ impl Face {
         let mut make_fillet = ffi::BRepFilletAPI_MakeFillet2d_ctor(&self.inner);
 
         let mut vertex_map = ffi::new_indexed_map_of_shape();
-        ffi::map_shapes(face_shape, ffi::TopAbs_ShapeEnum::TopAbs_VERTEX, vertex_map.pin_mut());
+        ffi::map_shapes(
+            face_shape,
+            ffi::TopAbs_ShapeEnum::TopAbs_VERTEX,
+            vertex_map.pin_mut(),
+        );
 
         // Get map of vertices to edges so we can find the edges connected to each vertex.
         let mut data_map = ffi::new_indexed_data_map_of_shape_list_of_shape();
@@ -229,7 +255,9 @@ impl Face {
         let mut make_pipe_shell =
             make_pipe_shell_with_law_function(&profile_wire, &path.inner, &law_handle);
 
-        make_pipe_shell.pin_mut().Build(&ffi::Message_ProgressRange_ctor());
+        make_pipe_shell
+            .pin_mut()
+            .Build(&ffi::Message_ProgressRange_ctor());
         make_pipe_shell.pin_mut().MakeSolid();
         let pipe_shape = make_pipe_shell.pin_mut().Shape();
         let result_solid = ffi::TopoDS_cast_to_solid(pipe_shape);
@@ -428,7 +456,9 @@ impl CompoundFace {
     pub fn revolve(&self, origin: Point3<f64>, axis: Vector3<f64>, angle: Option<Angle>) -> Shape {
         let revol_axis = make_axis_1(origin, axis);
 
-        let angle = angle.map(Angle::radians).unwrap_or(std::f64::consts::PI * 2.0);
+        let angle = angle
+            .map(Angle::radians)
+            .unwrap_or(std::f64::consts::PI * 2.0);
         let copy = false;
 
         let inner_shape = ffi::cast_compound_to_shape(&self.inner);
@@ -493,7 +523,7 @@ impl CompoundFace {
 
     pub fn transform(&mut self, tandr: &TandR<f64>) {
         let shape = ffi::cast_compound_to_shape(&self.inner);
-        
+
         //let transform: UniquePtr<ffi::gp_Trsf> = tandr.into();
 
         //let mut transformer = ffi::BRepBuilderAPI_Transform_ctor(shape, &transform, false);
@@ -524,7 +554,7 @@ impl From<ffi::TopAbs_Orientation> for FaceOrientation {
             ffi::TopAbs_Orientation::TopAbs_EXTERNAL => Self::External,
             ffi::TopAbs_Orientation { repr } => {
                 panic!("TopAbs_Orientation had an unrepresentable value: {repr}")
-            },
+            }
         }
     }
 }

@@ -1,9 +1,13 @@
-use crate::{
-    primitives::{BooleanShape, Compound, Edge, Face, Shape, Wire},
-    Error,
-};
+use crate::primitives::BooleanShape;
+use crate::primitives::Compound;
+use crate::primitives::Edge;
+use crate::primitives::Face;
+use crate::primitives::Shape;
+use crate::primitives::Wire;
+use crate::Error;
 use cxx::UniquePtr;
-use nalgebra::{vector, Point3};
+use nalgebra::vector;
+use nalgebra::Point3;
 use opencascade_sys::ffi;
 
 pub struct Solid {

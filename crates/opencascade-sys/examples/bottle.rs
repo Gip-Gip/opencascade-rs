@@ -1,24 +1,64 @@
 use cxx::UniquePtr;
-use opencascade_sys::ffi::{
-    cylinder_to_surface, ellipse_to_HandleGeom2d_Curve, ellipse_value, gp_Ax2_ctor, gp_Ax2d_ctor,
-    gp_Ax3_from_gp_Ax2, gp_DZ, gp_Dir2d_ctor, gp_OX, handle_geom_plane_location,
-    new_HandleGeomCurve_from_HandleGeom_TrimmedCurve, new_HandleGeomPlane_from_HandleGeomSurface,
-    new_list_of_shape, new_point, new_point_2d, new_transform, new_vec, shape_list_append_face,
-    type_name, write_stl, BRepAlgoAPI_Fuse_ctor, BRepBuilderAPI_MakeEdge_CurveSurface2d,
-    BRepBuilderAPI_MakeEdge_HandleGeomCurve, BRepBuilderAPI_MakeFace_wire,
-    BRepBuilderAPI_MakeWire_ctor, BRepBuilderAPI_MakeWire_edge_edge,
-    BRepBuilderAPI_MakeWire_edge_edge_edge, BRepBuilderAPI_Transform_ctor,
-    BRepFilletAPI_MakeFillet_ctor, BRepLibBuildCurves3d, BRepMesh_IncrementalMesh_ctor,
-    BRepOffsetAPI_MakeThickSolid_ctor, BRepOffsetAPI_ThruSections_ctor,
-    BRepPrimAPI_MakeCylinder_ctor, BRepPrimAPI_MakePrism_ctor, BRep_Builder_ctor,
-    BRep_Builder_upcast_to_topods_builder, BRep_Tool_Surface, DynamicType, ExplorerCurrentShape,
-    GCE2d_MakeSegment_point_point, GC_MakeArcOfCircle_Value, GC_MakeArcOfCircle_point_point_point,
-    GC_MakeSegment_Value, GC_MakeSegment_point_point, Geom2d_Ellipse_ctor,
-    Geom2d_TrimmedCurve_ctor, Geom_CylindricalSurface_ctor, HandleGeom2d_TrimmedCurve_to_curve,
-    MakeThickSolidByJoin, StlAPI_Writer_ctor, TopAbs_ShapeEnum, TopExp_Explorer_ctor,
-    TopoDS_Compound_as_shape, TopoDS_Compound_ctor, TopoDS_Face, TopoDS_Face_to_owned,
-    TopoDS_cast_to_edge, TopoDS_cast_to_face, TopoDS_cast_to_wire,
-};
+use opencascade_sys::ffi::cylinder_to_surface;
+use opencascade_sys::ffi::ellipse_to_HandleGeom2d_Curve;
+use opencascade_sys::ffi::ellipse_value;
+use opencascade_sys::ffi::gp_Ax2_ctor;
+use opencascade_sys::ffi::gp_Ax2d_ctor;
+use opencascade_sys::ffi::gp_Ax3_from_gp_Ax2;
+use opencascade_sys::ffi::gp_DZ;
+use opencascade_sys::ffi::gp_Dir2d_ctor;
+use opencascade_sys::ffi::gp_OX;
+use opencascade_sys::ffi::handle_geom_plane_location;
+use opencascade_sys::ffi::new_HandleGeomCurve_from_HandleGeom_TrimmedCurve;
+use opencascade_sys::ffi::new_HandleGeomPlane_from_HandleGeomSurface;
+use opencascade_sys::ffi::new_list_of_shape;
+use opencascade_sys::ffi::new_point;
+use opencascade_sys::ffi::new_point_2d;
+use opencascade_sys::ffi::new_transform;
+use opencascade_sys::ffi::new_vec;
+use opencascade_sys::ffi::shape_list_append_face;
+use opencascade_sys::ffi::type_name;
+use opencascade_sys::ffi::write_stl;
+use opencascade_sys::ffi::BRepAlgoAPI_Fuse_ctor;
+use opencascade_sys::ffi::BRepBuilderAPI_MakeEdge_CurveSurface2d;
+use opencascade_sys::ffi::BRepBuilderAPI_MakeEdge_HandleGeomCurve;
+use opencascade_sys::ffi::BRepBuilderAPI_MakeFace_wire;
+use opencascade_sys::ffi::BRepBuilderAPI_MakeWire_ctor;
+use opencascade_sys::ffi::BRepBuilderAPI_MakeWire_edge_edge;
+use opencascade_sys::ffi::BRepBuilderAPI_MakeWire_edge_edge_edge;
+use opencascade_sys::ffi::BRepBuilderAPI_Transform_ctor;
+use opencascade_sys::ffi::BRepFilletAPI_MakeFillet_ctor;
+use opencascade_sys::ffi::BRepLibBuildCurves3d;
+use opencascade_sys::ffi::BRepMesh_IncrementalMesh_ctor;
+use opencascade_sys::ffi::BRepOffsetAPI_MakeThickSolid_ctor;
+use opencascade_sys::ffi::BRepOffsetAPI_ThruSections_ctor;
+use opencascade_sys::ffi::BRepPrimAPI_MakeCylinder_ctor;
+use opencascade_sys::ffi::BRepPrimAPI_MakePrism_ctor;
+use opencascade_sys::ffi::BRep_Builder_ctor;
+use opencascade_sys::ffi::BRep_Builder_upcast_to_topods_builder;
+use opencascade_sys::ffi::BRep_Tool_Surface;
+use opencascade_sys::ffi::DynamicType;
+use opencascade_sys::ffi::ExplorerCurrentShape;
+use opencascade_sys::ffi::GCE2d_MakeSegment_point_point;
+use opencascade_sys::ffi::GC_MakeArcOfCircle_Value;
+use opencascade_sys::ffi::GC_MakeArcOfCircle_point_point_point;
+use opencascade_sys::ffi::GC_MakeSegment_Value;
+use opencascade_sys::ffi::GC_MakeSegment_point_point;
+use opencascade_sys::ffi::Geom2d_Ellipse_ctor;
+use opencascade_sys::ffi::Geom2d_TrimmedCurve_ctor;
+use opencascade_sys::ffi::Geom_CylindricalSurface_ctor;
+use opencascade_sys::ffi::HandleGeom2d_TrimmedCurve_to_curve;
+use opencascade_sys::ffi::MakeThickSolidByJoin;
+use opencascade_sys::ffi::StlAPI_Writer_ctor;
+use opencascade_sys::ffi::TopAbs_ShapeEnum;
+use opencascade_sys::ffi::TopExp_Explorer_ctor;
+use opencascade_sys::ffi::TopoDS_Compound_as_shape;
+use opencascade_sys::ffi::TopoDS_Compound_ctor;
+use opencascade_sys::ffi::TopoDS_Face;
+use opencascade_sys::ffi::TopoDS_Face_to_owned;
+use opencascade_sys::ffi::TopoDS_cast_to_edge;
+use opencascade_sys::ffi::TopoDS_cast_to_face;
+use opencascade_sys::ffi::TopoDS_cast_to_wire;
 
 // All dimensions are in millimeters.
 pub fn main() {
@@ -198,8 +238,12 @@ pub fn main() {
 
     let is_solid = true;
     let mut threading_loft = BRepOffsetAPI_ThruSections_ctor(is_solid);
-    threading_loft.pin_mut().AddWire(threading_wire_1.pin_mut().Wire());
-    threading_loft.pin_mut().AddWire(threading_wire_2.pin_mut().Wire());
+    threading_loft
+        .pin_mut()
+        .AddWire(threading_wire_1.pin_mut().Wire());
+    threading_loft
+        .pin_mut()
+        .AddWire(threading_wire_2.pin_mut().Wire());
     threading_loft.pin_mut().CheckCompatibility(false);
 
     let threading_shape = threading_loft.pin_mut().Shape();
@@ -219,7 +263,11 @@ pub fn main() {
     // Export to an STL file
     let mut stl_writer = StlAPI_Writer_ctor();
     let triangulation = BRepMesh_IncrementalMesh_ctor(&final_shape, 0.01);
-    let success = write_stl(stl_writer.pin_mut(), triangulation.Shape(), "bottle.stl".to_owned());
+    let success = write_stl(
+        stl_writer.pin_mut(),
+        triangulation.Shape(),
+        "bottle.stl".to_owned(),
+    );
 
     println!("Done! Success = {success}");
 }

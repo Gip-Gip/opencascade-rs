@@ -1,8 +1,15 @@
-use crate::{
-    primitives::{Edge, Wire},
-    Error, TandR, BASE_NORMAL, X_NORMAL, Y_NORMAL,
-};
-use nalgebra::{point, Point3, UnitQuaternion, UnitVector3, Vector3};
+use crate::primitives::Edge;
+use crate::primitives::Wire;
+use crate::Error;
+use crate::TandR;
+use crate::BASE_NORMAL;
+use crate::X_NORMAL;
+use crate::Y_NORMAL;
+use nalgebra::point;
+use nalgebra::Point3;
+use nalgebra::UnitQuaternion;
+use nalgebra::UnitVector3;
+use nalgebra::Vector3;
 
 #[derive(Debug, Copy, Clone)]
 pub enum Plane {
@@ -12,7 +19,10 @@ pub enum Plane {
     XZ,
     YX,
     ZY,
-    Custom { x_dir: UnitVector3<f64>, normal_dir: UnitVector3<f64> },
+    Custom {
+        x_dir: UnitVector3<f64>,
+        normal_dir: UnitVector3<f64>,
+    },
 }
 
 impl Plane {
@@ -62,31 +72,45 @@ pub struct Workplane {
 
 impl Workplane {
     pub fn new(x_dir: UnitVector3<f64>, normal_dir: UnitVector3<f64>) -> Self {
-        Self { transform: Plane::Custom { x_dir, normal_dir }.transform() }
+        Self {
+            transform: Plane::Custom { x_dir, normal_dir }.transform(),
+        }
     }
 
     pub fn xy() -> Self {
-        Self { transform: Plane::XY.transform() }
+        Self {
+            transform: Plane::XY.transform(),
+        }
     }
 
     pub fn yz() -> Self {
-        Self { transform: Plane::YZ.transform() }
+        Self {
+            transform: Plane::YZ.transform(),
+        }
     }
 
     pub fn zx() -> Self {
-        Self { transform: Plane::ZX.transform() }
+        Self {
+            transform: Plane::ZX.transform(),
+        }
     }
 
     pub fn xz() -> Self {
-        Self { transform: Plane::XZ.transform() }
+        Self {
+            transform: Plane::XZ.transform(),
+        }
     }
 
     pub fn zy() -> Self {
-        Self { transform: Plane::ZY.transform() }
+        Self {
+            transform: Plane::ZY.transform(),
+        }
     }
 
     pub fn yx() -> Self {
-        Self { transform: Plane::YX.transform() }
+        Self {
+            transform: Plane::YX.transform(),
+        }
     }
 
     pub fn origin(&self) -> Vector3<f64> {
@@ -193,7 +217,12 @@ pub struct Sketch {
 
 impl Sketch {
     fn new(cursor: Point3<f64>, workplane: Workplane) -> Self {
-        Self { first_point: None, cursor, workplane, edges: Vec::new() }
+        Self {
+            first_point: None,
+            cursor,
+            workplane,
+            edges: Vec::new(),
+        }
     }
 
     fn add_edge(&mut self, edge: Edge) {
@@ -221,7 +250,9 @@ impl Sketch {
 
     pub fn line_dx(mut self, dx: f64) -> Self {
         let cursor = self.workplane.to_local_pos(self.cursor);
-        let new_point = self.workplane.to_world_pos(point![cursor.x + dx, cursor.y, 0.0]);
+        let new_point = self
+            .workplane
+            .to_world_pos(point![cursor.x + dx, cursor.y, 0.0]);
         let new_edge = Edge::segment(self.cursor, new_point);
         self.cursor = new_point;
 
@@ -232,7 +263,9 @@ impl Sketch {
 
     pub fn line_dy(mut self, dy: f64) -> Self {
         let cursor = self.workplane.to_local_pos(self.cursor);
-        let new_point = self.workplane.to_world_pos(point![cursor.x, cursor.y + dy, 0.0]);
+        let new_point = self
+            .workplane
+            .to_world_pos(point![cursor.x, cursor.y + dy, 0.0]);
         let new_edge = Edge::segment(self.cursor, new_point);
         self.cursor = new_point;
 
@@ -243,7 +276,9 @@ impl Sketch {
 
     pub fn line_dx_dy(mut self, dx: f64, dy: f64) -> Self {
         let cursor = self.workplane.to_local_pos(self.cursor);
-        let new_point = self.workplane.to_world_pos(point![cursor.x + dx, cursor.y + dy, 0.0]);
+        let new_point = self
+            .workplane
+            .to_world_pos(point![cursor.x + dx, cursor.y + dy, 0.0]);
         let new_edge = Edge::segment(self.cursor, new_point);
         self.cursor = new_point;
 

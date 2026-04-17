@@ -1,6 +1,8 @@
-use crate::primitives::{Shape, make_point};
+use crate::primitives::make_point;
+use crate::primitives::Shape;
 use cxx::UniquePtr;
-use nalgebra::{Point3, point};
+use nalgebra::point;
+use nalgebra::Point3;
 use opencascade_sys::ffi::{self};
 
 pub struct Vertex {

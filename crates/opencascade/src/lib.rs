@@ -1,9 +1,20 @@
 use std::sync::LazyLock;
 
-use crate::primitives::{Edge, Shape, Wire};
+use crate::primitives::Edge;
+use crate::primitives::Shape;
+use crate::primitives::Wire;
 use cxx::UniquePtr;
-use nalgebra::{Matrix4, Point3, RealField, Scalar, UnitQuaternion, UnitVector3, Vector3, vector};
-use opencascade_sys::ffi::{self, TopoDS_Shape, gp_Trsf};
+use nalgebra::vector;
+use nalgebra::Matrix4;
+use nalgebra::Point3;
+use nalgebra::RealField;
+use nalgebra::Scalar;
+use nalgebra::UnitQuaternion;
+use nalgebra::UnitVector3;
+use nalgebra::Vector3;
+use opencascade_sys::ffi::gp_Trsf;
+use opencascade_sys::ffi::TopoDS_Shape;
+use opencascade_sys::ffi::{self};
 use simba::scalar::SubsetOf;
 use thiserror::Error;
 
@@ -125,7 +136,11 @@ impl<F: Scalar + RealField + Clone + Copy> Default for TandR<F> {
 
 impl<F: Scalar + RealField + Clone + Copy> TandR<F> {
     pub fn new(translation: Vector3<F>, rotation_quat: UnitQuaternion<F>) -> Self {
-        Self { translation, rotation_quat, inverse: false }
+        Self {
+            translation,
+            rotation_quat,
+            inverse: false,
+        }
     }
 
     pub fn translation(mut self, translation: Vector3<F>) -> Self {
@@ -144,16 +159,24 @@ impl<F: Scalar + RealField + Clone + Copy> TandR<F> {
                 let quat_2 = UnitQuaternion::rotation_between(&inter_norm, b).unwrap();
 
                 quat_2 * quat_1
-            },
+            }
         };
 
-        Self { translation: Vector3::zeros(), rotation_quat, inverse: false }
+        Self {
+            translation: Vector3::zeros(),
+            rotation_quat,
+            inverse: false,
+        }
     }
 
     pub fn from_axis_angle(axis: &UnitVector3<F>, angle: F) -> Self {
         let rotation_quat = UnitQuaternion::from_axis_angle(axis, angle);
 
-        Self { translation: Vector3::zeros(), rotation_quat, inverse: false }
+        Self {
+            translation: Vector3::zeros(),
+            rotation_quat,
+            inverse: false,
+        }
     }
 
     pub fn transform_point(&self, mut point: Point3<F>) -> Point3<F> {
@@ -204,7 +227,7 @@ impl<F: Scalar + RealField + Clone + Copy> TandR<F> {
 }
 
 impl TandR<f64> {
-    pub fn transform_shape(&self, shape: &ffi::TopoDS_Shape) -> UniquePtr<TopoDS_Shape>{
+    pub fn transform_shape(&self, shape: &ffi::TopoDS_Shape) -> UniquePtr<TopoDS_Shape> {
         let transform: UniquePtr<ffi::gp_Trsf> = self.into();
 
         let mut transformer = ffi::BRepBuilderAPI_Transform_ctor(shape, &transform, false);
@@ -232,7 +255,9 @@ impl From<&TandR<f64>> for UniquePtr<gp_Trsf> {
         let occ_vec = ffi::new_vec(vec.x, vec.y, vec.z);
         let occ_quat = ffi::new_quaternion(quat.i, quat.j, quat.k, quat.w);
 
-        occ_transform.pin_mut().SetTransformation(&occ_quat, &occ_vec);
+        occ_transform
+            .pin_mut()
+            .SetTransformation(&occ_quat, &occ_vec);
 
         if is_inverse {
             occ_transform.pin_mut().Invert();

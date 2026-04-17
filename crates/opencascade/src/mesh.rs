@@ -1,9 +1,12 @@
-use crate::{
-    primitives::{FaceOrientation, Shape},
-    Error,
-};
+use crate::primitives::FaceOrientation;
+use crate::primitives::Shape;
+use crate::Error;
 use cxx::UniquePtr;
-use nalgebra::{point, vector, Point3, Vector2, Vector3};
+use nalgebra::point;
+use nalgebra::vector;
+use nalgebra::Point3;
+use nalgebra::Vector2;
+use nalgebra::Vector3;
 use opencascade_sys::ffi;
 
 #[derive(Debug)]
@@ -51,7 +54,9 @@ impl Mesher {
 
             for i in 1..=face_point_count {
                 let mut point = ffi::Poly_Triangulation_Node(triangulation, i);
-                point.pin_mut().Transform(&ffi::TopLoc_Location_Transformation(&location));
+                point
+                    .pin_mut()
+                    .Transform(&ffi::TopLoc_Location_Transformation(&location));
                 vertices.push(point![point.X(), point.Y(), point.Z()]);
             }
 
@@ -111,6 +116,11 @@ impl Mesher {
             }
         }
 
-        Ok(Mesh { vertices, uvs, normals, indices })
+        Ok(Mesh {
+            vertices,
+            uvs,
+            normals,
+            indices,
+        })
     }
 }

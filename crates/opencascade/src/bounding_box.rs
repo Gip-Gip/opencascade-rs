@@ -1,5 +1,8 @@
 use cxx::UniquePtr;
-use nalgebra::{point, vector, Point3, Vector3};
+use nalgebra::point;
+use nalgebra::vector;
+use nalgebra::Point3;
+use nalgebra::Vector3;
 use opencascade_sys::ffi;
 
 use crate::primitives::Shape;
@@ -14,7 +17,9 @@ pub struct BoundingBox {
 impl BoundingBox {
     /// Create a new void box. A void box in OCC is defined as a box that contains no points.
     pub fn void() -> BoundingBox {
-        Self { inner: ffi::Bnd_Box_ctor() }
+        Self {
+            inner: ffi::Bnd_Box_ctor(),
+        }
     }
 
     pub fn is_void(&self) -> bool {

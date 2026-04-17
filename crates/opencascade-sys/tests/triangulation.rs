@@ -1,8 +1,13 @@
-use opencascade_sys::ffi::{
-    new_point, BRepMesh_IncrementalMesh_ctor, BRepPrimAPI_MakeBox_ctor, BRep_Tool_Triangulation,
-    HandlePoly_Triangulation_Get, Poly_Triangulation_Node, TopAbs_ShapeEnum, TopExp_Explorer_ctor,
-    TopLoc_Location_ctor, TopoDS_cast_to_face,
-};
+use opencascade_sys::ffi::new_point;
+use opencascade_sys::ffi::BRepMesh_IncrementalMesh_ctor;
+use opencascade_sys::ffi::BRepPrimAPI_MakeBox_ctor;
+use opencascade_sys::ffi::BRep_Tool_Triangulation;
+use opencascade_sys::ffi::HandlePoly_Triangulation_Get;
+use opencascade_sys::ffi::Poly_Triangulation_Node;
+use opencascade_sys::ffi::TopAbs_ShapeEnum;
+use opencascade_sys::ffi::TopExp_Explorer_ctor;
+use opencascade_sys::ffi::TopLoc_Location_ctor;
+use opencascade_sys::ffi::TopoDS_cast_to_face;
 
 #[test]
 fn it_can_access_mesh_triangulation() {
