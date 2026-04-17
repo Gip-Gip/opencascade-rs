@@ -22,8 +22,6 @@ use crate::primitives::VertexIterator;
 use crate::primitives::Wire;
 use crate::primitives::WireIterator;
 use crate::Error;
-use crate::TandR;
-use crate::TopExpExplorerIter;
 use cxx::UniquePtr;
 use nalgebra::point;
 use nalgebra::Point3;

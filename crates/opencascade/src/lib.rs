@@ -5,7 +5,6 @@ use crate::primitives::Shape;
 use crate::primitives::Wire;
 use cxx::UniquePtr;
 use nalgebra::vector;
-use nalgebra::Matrix4;
 use nalgebra::Point3;
 use nalgebra::RealField;
 use nalgebra::Scalar;
