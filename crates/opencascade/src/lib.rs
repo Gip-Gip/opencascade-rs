@@ -179,20 +179,7 @@ impl<F: Scalar + RealField + Clone + Copy + From<f32>> TandR<F> {
     }
 
     pub fn from_transform_between(&self, other: &Self) -> Self {
-        match (self.inverse, other.inverse) {
-            (false, false) | (true, true) => {
-                let norm_1 = self.rotate_norm(UnitVector3::new_unchecked(vector![0.0.into(), 0.0.into(), 1.0.into()]));
-                let norm_2 = other.rotate_norm(UnitVector3::new_unchecked(vector![0.0.into(), 0.0.into(), 1.0.into()]));
-                
-                let mut new_tandr = Self::from_rotation_between(&norm_1, &norm_2);
-
-                new_tandr.translation = other.translation - self.translation;
-                new_tandr
-            }
-            _ => {
-                todo!()
-            }
-        }
+        self.inverse().transform_tandr(*other)
     }
 
     pub fn transform_point(&self, mut point: Point3<F>) -> Point3<F> {
