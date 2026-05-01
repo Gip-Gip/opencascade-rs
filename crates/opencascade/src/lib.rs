@@ -117,13 +117,13 @@ impl WireExplorerIter {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct TandR<F: Scalar + RealField + Clone + Copy> {
+pub struct TandR<F: Scalar + RealField + Clone + Copy + From<f32>> {
     pub translation: Vector3<F>,
     pub rotation_quat: UnitQuaternion<F>,
     pub inverse: bool,
 }
 
-impl<F: Scalar + RealField + Clone + Copy> Default for TandR<F> {
+impl<F: Scalar + RealField + Clone + Copy + From<f32>> Default for TandR<F> {
     fn default() -> Self {
         Self {
             translation: Vector3::<F>::zeros(),
@@ -133,7 +133,7 @@ impl<F: Scalar + RealField + Clone + Copy> Default for TandR<F> {
     }
 }
 
-impl<F: Scalar + RealField + Clone + Copy> TandR<F> {
+impl<F: Scalar + RealField + Clone + Copy + From<f32>> TandR<F> {
     pub fn new(translation: Vector3<F>, rotation_quat: UnitQuaternion<F>) -> Self {
         Self {
             translation,
@@ -178,6 +178,23 @@ impl<F: Scalar + RealField + Clone + Copy> TandR<F> {
         }
     }
 
+    pub fn from_transform_between(&self, other: &Self) -> Self {
+        match (self.inverse, other.inverse) {
+            (false, false) | (true, true) => {
+                let norm_1 = self.rotate_norm(UnitVector3::new_unchecked(vector![0.0.into(), 0.0.into(), 1.0.into()]));
+                let norm_2 = other.rotate_norm(UnitVector3::new_unchecked(vector![0.0.into(), 0.0.into(), 1.0.into()]));
+                
+                let mut new_tandr = Self::from_rotation_between(&norm_1, &norm_2);
+
+                new_tandr.translation = other.translation - self.translation;
+                new_tandr
+            }
+            _ => {
+                todo!()
+            }
+        }
+    }
+
     pub fn transform_point(&self, mut point: Point3<F>) -> Point3<F> {
         if self.inverse {
             point += self.translation;
@@ -213,7 +230,7 @@ impl<F: Scalar + RealField + Clone + Copy> TandR<F> {
         }
     }
 
-    pub fn cast<T: Scalar + RealField + Clone + Copy>(&self) -> TandR<T>
+    pub fn cast<T: Scalar + RealField + Clone + Copy + From<f32>>(&self) -> TandR<T>
     where
         F: SubsetOf<T>,
     {
