@@ -1,3 +1,4 @@
+use crate::TopExpExplorerIter;
 use crate::mesh::Mesh;
 use crate::mesh::Mesher;
 use crate::primitives::make_axis_1;
@@ -27,6 +28,7 @@ use nalgebra::point;
 use nalgebra::Point3;
 use nalgebra::Vector3;
 use opencascade_sys::ffi;
+use opencascade_sys::ffi::TopAbs_ShapeEnum;
 use std::cmp::Ordering;
 use std::path::Path;
 
@@ -739,8 +741,8 @@ impl Shape {
     }
 
     pub fn edges(&self) -> EdgeIterator {
-        let _explorer = ffi::TopExp_Explorer_ctor(&self.inner, ffi::TopAbs_ShapeEnum::TopAbs_EDGE);
-        todo!()
+        let explorer_iter = TopExpExplorerIter::new(self, TopAbs_ShapeEnum::TopAbs_EDGE);
+        EdgeIterator { explorer_iter }
     }
 
     pub fn solids(&self) -> SolidIterator {
@@ -850,16 +852,38 @@ impl Shape {
         self.inner = inner;
     }
 
+    pub fn distance_between(&self, other: &Shape) -> Result<Option<f64>, Error> { 
+        let mut dist_shape_shape = ffi::BRepExtrema_DistShapeShape(
+            &self.inner,
+            &other.inner,
+            ffi::Extrema_ExtFlag::Extrema_ExtFlag_MINMAX,
+            ffi::Extrema_ExtAlgo::Extrema_ExtAlgo_Tree, 
+            &ffi::Message_ProgressRange_ctor());
+
+        if !dist_shape_shape.pin_mut().Perform(&ffi::Message_ProgressRange_ctor()) {
+            return Err(Error::NotDone);
+        }
+
+        if dist_shape_shape.NbSolution() == 0 {
+            return Ok(None)
+        }
+
+        // whoever made this one-indexed, I hope you trip and fall and bruise your knee
+        let point_self = dist_shape_shape.PointOnShape1(1);
+        let point_other = dist_shape_shape.PointOnShape2(1);
+
+        Ok(Some(point_self.Distance(point_other)))
+    }
+
     pub fn overlaps(&self, other: &Shape, tolerance: f64) -> Result<bool, Error> {
-        let mut shape_proximity = ffi::BRepExtrema_ShapeProximity(&self.inner, &other.inner, tolerance);
+        let distance_opt = self.distance_between(other)?;
 
-        shape_proximity.pin_mut().Perform();
+        if let Some(distance) = distance_opt {
+            Ok(distance < tolerance)
+        } else {
+            Ok(false)
+        }
 
-        //if !shape_proximity.IsDone() {
-        //    return Err(Error::NotDone);
-        //}
-
-        Ok(shape_proximity.Proximity() < tolerance * 2.0)
     }
 }
 

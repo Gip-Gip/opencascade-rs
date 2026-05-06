@@ -62,6 +62,21 @@ pub mod ffi {
         GeomAbs_Intersection,
     }
 
+    #[repr(u32)]
+    #[derive(Debug)]
+    pub enum Extrema_ExtFlag {
+        Extrema_ExtFlag_MIN,
+        Extrema_ExtFlag_MAX,
+        Extrema_ExtFlag_MINMAX,
+    }
+    
+    #[repr(u32)]
+    #[derive(Debug)]
+    pub enum Extrema_ExtAlgo {
+        Extrema_ExtAlgo_Grad,
+        Extrema_ExtAlgo_Tree,
+    }
+
     unsafe extern "C++" {
         // https://github.com/dtolnay/cxx/issues/280
 
@@ -610,13 +625,18 @@ pub mod ffi {
         pub fn BRepAdaptor_Curve_value(curve: &BRepAdaptor_Curve, u: f64) -> UniquePtr<gp_Pnt>;
         pub fn GetType(self: &BRepAdaptor_Curve) -> GeomAbs_CurveType;
     
-        type BRepExtrema_ShapeProximity;
+        type Extrema_ExtFlag;
+        type Extrema_ExtAlgo;
+        type BRepExtrema_DistShapeShape;
         #[cxx_name = "construct_unique"]
 
-        pub fn BRepExtrema_ShapeProximity(shape_1: &TopoDS_Shape, shape_2: &TopoDS_Shape, tolerance: f64) -> UniquePtr<BRepExtrema_ShapeProximity>;
-        pub fn Perform(self: Pin<&mut BRepExtrema_ShapeProximity>);
-        pub fn IsDone(self: &BRepExtrema_ShapeProximity) -> bool;
-        pub fn Proximity(self: &BRepExtrema_ShapeProximity) -> f64;
+        pub fn BRepExtrema_DistShapeShape(shape_1: &TopoDS_Shape, shape_2: &TopoDS_Shape, extflag: Extrema_ExtFlag, extalgo: Extrema_ExtAlgo, progress: &Message_ProgressRange) -> UniquePtr<BRepExtrema_DistShapeShape>;
+        pub fn Perform(self: Pin<&mut BRepExtrema_DistShapeShape>, progress: &Message_ProgressRange) -> bool;
+        pub fn PointOnShape1(self: &BRepExtrema_DistShapeShape, i_point: i32) -> &gp_Pnt;
+        pub fn PointOnShape2(self: &BRepExtrema_DistShapeShape, i_point: i32) -> &gp_Pnt;
+        pub fn NbSolution(self: &BRepExtrema_DistShapeShape) -> i32;
+        //pub fn IsDone(self: &BRepExtrema_DistShapeShape) -> bool;
+        //pub fn Value(self: &BRepExtrema_DistShapeShape) -> f64;
 
         // Primitives
         type BRepPrimAPI_MakePrism;
