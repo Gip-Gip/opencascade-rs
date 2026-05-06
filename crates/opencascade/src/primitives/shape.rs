@@ -849,6 +849,18 @@ impl Shape {
 
         self.inner = inner;
     }
+
+    pub fn overlaps(&self, other: &Shape, tolerance: f64) -> Result<bool, Error> {
+        let mut shape_proximity = ffi::BRepExtrema_ShapeProximity(&self.inner, &other.inner, tolerance);
+
+        shape_proximity.pin_mut().Perform();
+
+        //if !shape_proximity.IsDone() {
+        //    return Err(Error::NotDone);
+        //}
+
+        Ok(shape_proximity.Proximity() < tolerance * 2.0)
+    }
 }
 
 /// Information about a point where a line hits (i.e. intersects) a face

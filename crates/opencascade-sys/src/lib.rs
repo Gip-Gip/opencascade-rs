@@ -609,6 +609,14 @@ pub mod ffi {
         pub fn LastParameter(self: &BRepAdaptor_Curve) -> f64;
         pub fn BRepAdaptor_Curve_value(curve: &BRepAdaptor_Curve, u: f64) -> UniquePtr<gp_Pnt>;
         pub fn GetType(self: &BRepAdaptor_Curve) -> GeomAbs_CurveType;
+    
+        type BRepExtrema_ShapeProximity;
+        #[cxx_name = "construct_unique"]
+
+        pub fn BRepExtrema_ShapeProximity(shape_1: &TopoDS_Shape, shape_2: &TopoDS_Shape, tolerance: f64) -> UniquePtr<BRepExtrema_ShapeProximity>;
+        pub fn Perform(self: Pin<&mut BRepExtrema_ShapeProximity>);
+        pub fn IsDone(self: &BRepExtrema_ShapeProximity) -> bool;
+        pub fn Proximity(self: &BRepExtrema_ShapeProximity) -> f64;
 
         // Primitives
         type BRepPrimAPI_MakePrism;
