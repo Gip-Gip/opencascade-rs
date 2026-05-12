@@ -755,8 +755,7 @@ impl Shape {
     }
 
     pub fn wires(&self) -> WireIterator {
-        let explorer = ffi::TopExp_Explorer_ctor(&self.inner, ffi::TopAbs_ShapeEnum::TopAbs_WIRE);
-        WireIterator { explorer }
+        WireIterator::new(self)
     }
 
     pub fn faces(&self) -> FaceIterator {

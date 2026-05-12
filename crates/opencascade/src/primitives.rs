@@ -258,23 +258,22 @@ impl Iterator for SolidIterator {
 }
 
 pub struct WireIterator {
-    explorer: UniquePtr<ffi::TopExp_Explorer>,
+    explorer_iter: TopExpExplorerIter,
 }
 
 impl Iterator for WireIterator {
     type Item = Wire;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.explorer.More() {
-            let wire_inner = ffi::TopoDS_cast_to_wire(self.explorer.Current());
-            let wire = Wire::from_wire(wire_inner);
+        self.explorer_iter.next().map(|shape| shape.into())
+    }
+}
 
-            self.explorer.pin_mut().Next();
+impl WireIterator {
+    pub fn new(shape: &Shape) -> Self {
+        let explorer_iter = TopExpExplorerIter::new(shape, ffi::TopAbs_ShapeEnum::TopAbs_WIRE);
 
-            Some(wire)
-        } else {
-            None
-        }
+        Self { explorer_iter }
     }
 }
 

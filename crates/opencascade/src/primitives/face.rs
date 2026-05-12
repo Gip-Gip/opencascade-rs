@@ -1,6 +1,7 @@
 use crate::angle::Angle;
 use crate::law_function::law_function_from_graph;
 use crate::make_pipe_shell::make_pipe_shell_with_law_function;
+use crate::primitives::WireIterator;
 use crate::primitives::make_axis_1;
 use crate::primitives::make_point;
 use crate::primitives::make_vec;
@@ -269,6 +270,12 @@ impl Face {
         let face_shape: Shape = self.into();
 
         EdgeIterator::new(&face_shape)
+    }
+
+    pub fn wires(&self) -> WireIterator {
+        let face_shape: Shape = self.into();
+
+        WireIterator::new(&face_shape)
     }
 
     pub fn center_of_mass(&self) -> Point3<f64> {

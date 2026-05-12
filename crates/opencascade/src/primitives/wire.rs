@@ -303,6 +303,14 @@ impl Wire {
     pub fn freeform() {}
 }
 
+impl From<Shape> for Wire {
+    fn from(value: Shape) -> Self {
+        let topo_wire = ffi::TopoDS_cast_to_wire(&value.inner);
+
+        Self::from_wire(topo_wire)
+    }
+}
+
 pub struct WireBuilder {
     inner: UniquePtr<ffi::BRepBuilderAPI_MakeWire>,
 }
