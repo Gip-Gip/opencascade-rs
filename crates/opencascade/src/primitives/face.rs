@@ -79,6 +79,28 @@ impl Face {
     }
 
     #[must_use]
+    pub fn loft(&self, other: &Self) -> Result<Solid, Error> {
+        let start_wire = self.outer_wire();
+        let end_wire = other.outer_wire();
+
+        let mut loft_builder = ffi::BRepOffsetAPI_ThruSections_ctor(true);
+
+        loft_builder.pin_mut().AddWire(&start_wire.inner);
+        loft_builder.pin_mut().AddWire(&end_wire.inner);
+        
+        loft_builder.pin_mut().Build(&ffi::Message_ProgressRange_ctor());
+        
+        if !loft_builder.IsDone() {
+            return Err(Error::NotDone);
+        }
+
+        let shape = loft_builder.pin_mut().Shape();
+        let solid = ffi::TopoDS_cast_to_solid(shape);
+        
+        Ok(Solid::from_solid(solid))
+    }
+
+    #[must_use]
     pub fn extrude_to_face(&self, shape_with_face: &Shape, face: &Face) -> Shape {
         let profile_base = &self.inner;
         let sketch_base = ffi::TopoDS_Face_ctor();
