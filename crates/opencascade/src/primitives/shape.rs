@@ -1,3 +1,4 @@
+use crate::TandR;
 use crate::TopExpExplorerIter;
 use crate::mesh::Mesh;
 use crate::mesh::Mesher;
@@ -882,6 +883,13 @@ impl Shape {
         } else {
             Ok(false)
         }
+
+    }
+
+    pub fn transform(&mut self, tandr: &TandR<f64>) {
+        let shape = &self.inner;
+
+        self.inner = tandr.transform_shape(shape);
 
     }
 }
