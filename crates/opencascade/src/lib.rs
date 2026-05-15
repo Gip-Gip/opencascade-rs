@@ -4,6 +4,8 @@ use crate::primitives::Edge;
 use crate::primitives::Shape;
 use crate::primitives::Wire;
 use cxx::UniquePtr;
+use nalgebra::Point2;
+use nalgebra::point;
 use nalgebra::vector;
 use nalgebra::Point3;
 use nalgebra::RealField;
@@ -194,6 +196,13 @@ impl<F: Scalar + RealField + Clone + Copy + From<f32>> TandR<F> {
 
             point
         }
+    }
+
+    pub fn transform_point2d(&self, point: Point2<F>) -> Point2<F> {
+        let point3d = point![point.x, point.y, 0.0.into()];
+        let new_point = self.transform_point(point3d);
+
+        point![new_point.x, new_point.y]
     }
 
     pub fn transform_tandr(&self, mut tandr: Self) -> Self {
