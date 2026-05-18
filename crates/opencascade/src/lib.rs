@@ -180,6 +180,14 @@ impl<F: Scalar + RealField + Clone + Copy + From<f32>> TandR<F> {
         }
     }
 
+    pub fn from_axis_angle_origin(axis: &UnitVector3<F>, angle: F, origin: Point3<F>) -> Self {
+        let to_origin = TandR::new(-origin.coords, UnitQuaternion::identity());
+        let rotate = TandR::from_axis_angle(axis, angle);
+        let from_origin = TandR::new(origin.coords, UnitQuaternion::identity());
+
+        from_origin.transform_tandr(rotate.transform_tandr(to_origin))
+    }
+
     pub fn from_transform_between(&self, other: &Self) -> Self {
         self.inverse().transform_tandr(*other)
     }
