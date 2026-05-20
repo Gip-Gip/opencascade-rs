@@ -11,7 +11,7 @@ use opencascade_sys::ffi;
 use super::make_vec;
 
 #[repr(u8)]
-#[derive(Debug, Copy, Clone, PartialEq, PartialOrd)]
+#[derive(Debug, Copy, Clone, PartialEq, PartialOrd, Hash, Eq)]
 pub enum EdgeType {
     Line,
     Circle,
