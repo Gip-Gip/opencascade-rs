@@ -64,6 +64,10 @@ pub struct TopExpExplorerIter {
     explorer: UniquePtr<ffi::TopExp_Explorer>,
 }
 
+pub fn point_to_gppnt(p: Point3<f64>) -> UniquePtr<ffi::gp_Pnt> {
+    ffi::new_point(p.x, p.y, p.z)
+}
+
 impl Iterator for TopExpExplorerIter {
     type Item = Shape;
     fn next(&mut self) -> Option<Self::Item> {

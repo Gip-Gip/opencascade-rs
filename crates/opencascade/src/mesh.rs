@@ -32,13 +32,17 @@ impl Mesher {
         }
     }
 
-    pub fn mesh(mut self) -> Result<Mesh, Error> {
+    pub fn get_shape(mut self) -> Shape {
+        Shape::from_shape(self.inner.pin_mut().Shape())
+    }
+
+    pub fn mesh(self) -> Result<Mesh, Error> {
         let mut vertices = vec![];
         let mut uvs = vec![];
         let mut normals = vec![];
         let mut indices = vec![];
 
-        let triangulated_shape = Shape::from_shape(self.inner.pin_mut().Shape());
+        let triangulated_shape = self.get_shape();
 
         for face in triangulated_shape.faces() {
             let mut location = ffi::TopLoc_Location_ctor();

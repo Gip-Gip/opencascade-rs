@@ -1,3 +1,5 @@
+use crate::mesh;
+use crate::point_to_gppnt;
 use crate::TandR;
 use crate::TopExpExplorerIter;
 use crate::mesh::Mesh;
@@ -732,6 +734,10 @@ impl Shape {
             .set_global_translation(&location, false);
     }
 
+    pub fn calculate_mesh(&self, tolerance: f64) -> Result<Mesher, Error> {
+        Mesher::try_new(self, tolerance)
+    }
+
     pub fn mesh(&self) -> Result<Mesh, Error> {
         self.mesh_with_tolerance(0.01)
     }
@@ -875,13 +881,71 @@ impl Shape {
         Ok(Some(point_self.Distance(point_other)))
     }
 
-    pub fn overlaps(&self, other: &Shape, tolerance: f64) -> Result<bool, Error> {
-        let mut shape_prox = ffi::BRepExtrema_ShapeProximity(&self.inner, &other.inner, tolerance);
+    // Slow as cheeks. !TODO! make this not slow as cheeks
+    pub fn overlaps(&self, other: &Shape, mesh_tolerance: f64, tolerance: f64) -> Result<bool, Error> {
+        let self_com = self.center_of_mass();
+        let other_com = other.center_of_mass();
+
+        let Some(self_normal) = self.faces().next().map(|x| x.normal_at_center()) else {
+            return Ok(false);
+        };
+
+        let Some(other_normal) = other.faces().next().map(|x| x.normal_at_center()) else {
+            return Ok(false);
+        };
+
+        let delta_norms = other_normal.into_inner() - self_normal.into_inner();
+        let inv_delta_norms = other_normal.into_inner() - -(self_normal.into_inner());
+
+        if delta_norms.abs().max() > tolerance && inv_delta_norms.abs().max() > tolerance {
+            return Ok(false);
+        }
+
+        let mut self_shrink_transform = ffi::new_transform();
+        self_shrink_transform.pin_mut().SetScale(&point_to_gppnt(self_com), 1.0 - tolerance);
+        let mut self_grow_transform = ffi::new_transform();
+        self_grow_transform.pin_mut().SetScale(&point_to_gppnt(other_com), 1.0 + tolerance);
+        let mut other_shrink_transform = ffi::new_transform();
+        other_shrink_transform.pin_mut().SetScale(&point_to_gppnt(other_com), 1.0 - tolerance);
+        let mut other_grow_transform = ffi::new_transform();
+        other_grow_transform.pin_mut().SetScale(&point_to_gppnt(self_com), 1.0 + tolerance);
+        
+        let transforms = [
+            (self_shrink_transform, other_grow_transform),
+            (self_grow_transform, other_shrink_transform)
+        ];
+
+        let mut overlaps = true;
+
+        for (self_transform, other_transform) in transforms {
+            overlaps &= self.clone().overlap_with_transforms(&other.clone(), mesh_tolerance, &self_transform, &other_transform)?;
+
+            if !overlaps {
+                break;
+            }
+        }
+
+
+        Ok(overlaps)
+    }
+
+    fn overlap_with_transforms(&self, other: &Self, mesh_tolerance: f64, self_transform: &ffi::gp_Trsf, other_transform: &ffi::gp_Trsf) -> Result<bool, Error> {
+        let mut self_transformer = ffi::BRepBuilderAPI_Transform_ctor(&self.inner, self_transform, false);
+        let mut other_transformer = ffi::BRepBuilderAPI_Transform_ctor(&other.inner, other_transform, true);
+
+        let ov_self = Shape::from_shape(self_transformer.pin_mut().Shape());
+        let ov_other = Shape::from_shape(other_transformer.pin_mut().Shape());
+
+        ov_self.calculate_mesh(mesh_tolerance)?;
+        ov_other.calculate_mesh(mesh_tolerance)?;
+
+        let mut shape_prox = ffi::BRepExtrema_ShapeProximity(&ov_self.inner, &ov_other.inner, 0.0);
 
         shape_prox.pin_mut().Perform();
 
+        // Sometimes it just fails. idk why, just return false
         if !shape_prox.IsDone() {
-            return Err(Error::NotDone);
+            return Ok(false);
         }
 
         let overlaps = if ffi::BRepExtrema_ShapeProximity_OverlapCount(&shape_prox) > 0 {
@@ -891,6 +955,16 @@ impl Shape {
         };
 
         Ok(overlaps)
+    }
+
+    pub fn center_of_mass(&self) -> Point3<f64> {
+        let mut props = ffi::GProp_GProps_ctor();
+
+        ffi::BRepGProp_SurfaceProperties(&self.inner, props.pin_mut());
+
+        let center = ffi::GProp_GProps_CentreOfMass(&props);
+
+        point![center.X(), center.Y(), center.Z()]
     }
 
     pub fn transform(&mut self, tandr: &TandR<f64>) {
