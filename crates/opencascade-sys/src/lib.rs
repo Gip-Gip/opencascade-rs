@@ -637,7 +637,14 @@ pub mod ffi {
         pub fn NbSolution(self: &BRepExtrema_DistShapeShape) -> i32;
         //pub fn IsDone(self: &BRepExtrema_DistShapeShape) -> bool;
         //pub fn Value(self: &BRepExtrema_DistShapeShape) -> f64;
+        type BRepExtrema_ShapeProximity;
 
+        #[cxx_name = "construct_unique"]
+        pub fn BRepExtrema_ShapeProximity(shape_1: &TopoDS_Shape, shape_2: &TopoDS_Shape, tolerance: f64) -> UniquePtr<BRepExtrema_ShapeProximity>;
+        pub fn Perform(self: Pin<&mut BRepExtrema_ShapeProximity>);
+        pub fn IsDone(self: &BRepExtrema_ShapeProximity) -> bool;
+        pub fn BRepExtrema_ShapeProximity_OverlapCount(shape_prox: &BRepExtrema_ShapeProximity) -> usize;
+        
         // Primitives
         type BRepPrimAPI_MakePrism;
 

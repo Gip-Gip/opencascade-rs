@@ -16,6 +16,7 @@
 #include <BRepBuilderAPI_Copy.hxx>
 #include <BRepBuilderAPI_Transform.hxx>
 #include <BRepExtrema_DistShapeShape.hxx>
+#include <BRepExtrema_ShapeProximity.hxx>
 #include <BRepFeat_MakeCylindricalHole.hxx>
 #include <BRepFeat_MakeDPrism.hxx>
 #include <BRepFilletAPI_MakeChamfer.hxx>
@@ -65,6 +66,7 @@
 #include <Message_ProgressRange.hxx>
 #include <NCollection_Array1.hxx>
 #include <NCollection_Array2.hxx>
+#include <NCollection_DataMap.hxx>
 #include <Poly_Connect.hxx>
 #include <STEPControl_Reader.hxx>
 #include <STEPControl_Writer.hxx>
@@ -549,4 +551,8 @@ inline std::unique_ptr<gp_Pnt> Bnd_Box_CornerMax(const Bnd_Box &box) {
 // BRepBndLib
 inline void BRepBndLib_Add(const TopoDS_Shape &shape, Bnd_Box &box, const Standard_Boolean useTriangulation) {
   BRepBndLib::Add(shape, box, useTriangulation);
+}
+
+inline size_t BRepExtrema_ShapeProximity_OverlapCount(const BRepExtrema_ShapeProximity &shape_prox) {
+    return shape_prox.OverlapSubShapes1().Size();
 }

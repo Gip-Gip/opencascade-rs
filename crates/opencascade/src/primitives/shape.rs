@@ -876,14 +876,21 @@ impl Shape {
     }
 
     pub fn overlaps(&self, other: &Shape, tolerance: f64) -> Result<bool, Error> {
-        let distance_opt = self.distance_between(other)?;
+        let mut shape_prox = ffi::BRepExtrema_ShapeProximity(&self.inner, &other.inner, tolerance);
 
-        if let Some(distance) = distance_opt {
-            Ok(distance < tolerance)
-        } else {
-            Ok(false)
+        shape_prox.pin_mut().Perform();
+
+        if !shape_prox.IsDone() {
+            return Err(Error::NotDone);
         }
 
+        let overlaps = if ffi::BRepExtrema_ShapeProximity_OverlapCount(&shape_prox) > 0 {
+            true
+        } else {
+            false
+        };
+
+        Ok(overlaps)
     }
 
     pub fn transform(&mut self, tandr: &TandR<f64>) {
