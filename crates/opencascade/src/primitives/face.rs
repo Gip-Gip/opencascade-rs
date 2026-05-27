@@ -312,6 +312,7 @@ impl Face {
     }
 
     pub fn normal_at(&self, pos: Point3<f64>) -> UnitVector3<f64> {
+        let inverse = self.inner.Orientation() == ffi::TopAbs_Orientation::TopAbs_REVERSED;
         let surface = ffi::BRep_Tool_Surface(&self.inner);
         let projector = ffi::GeomAPI_ProjectPointOnSurf_ctor(&make_point(pos), &surface);
         let mut u: f64 = 0.0;
@@ -325,12 +326,21 @@ impl Face {
         let face = ffi::BRepGProp_Face_ctor(&self.inner);
         face.Normal(u, v, p.pin_mut(), normal.pin_mut());
 
-        UnitVector3::new_normalize(vector![normal.X(), normal.Y(), normal.Z()])
+        match inverse {
+            true => UnitVector3::new_normalize(-vector![normal.X(), normal.Y(), normal.Z()]),
+            false => UnitVector3::new_normalize(vector![normal.X(), normal.Y(), normal.Z()]),
+        }
     }
 
     pub fn normal_at_center(&self) -> UnitVector3<f64> {
         let center = self.center_of_mass();
         self.normal_at(center)
+    }
+
+    pub fn normal(&self) -> Vector3<f64> {
+        let normal = ffi::CalculateFaceNormalPlease(&self.inner);
+
+        vector![normal.X(), normal.Y(), normal.Z()]
     }
 
     pub fn workplane(&self) -> Workplane {

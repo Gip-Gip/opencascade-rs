@@ -27,6 +27,7 @@ use crate::primitives::Wire;
 use crate::primitives::WireIterator;
 use crate::Error;
 use cxx::UniquePtr;
+use nalgebra::UnitVector3;
 use nalgebra::point;
 use nalgebra::Point3;
 use nalgebra::Vector3;
@@ -882,64 +883,21 @@ impl Shape {
     }
 
     // Slow as cheeks. !TODO! make this not slow as cheeks
-    pub fn overlaps(&self, other: &Shape, mesh_tolerance: f64, tolerance: f64) -> Result<bool, Error> {
-        let self_com = self.center_of_mass();
-        let other_com = other.center_of_mass();
+    pub fn overlaps(&self, other: &Shape, mesh_tolerance: f64, tolerance: f64, self_normal_override: Option<Vector3<f64>>, other_normal_override: Option<Vector3<f64>>) -> Result<bool, Error> {
+        let self_normal = self_normal_override.unwrap_or_else(|| self.faces().next().map(|x| x.normal()).unwrap_or_default());
 
-        let Some(self_normal) = self.faces().next().map(|x| x.normal_at_center()) else {
-            return Ok(false);
-        };
+        let other_normal = other_normal_override.unwrap_or_else(|| other.faces().next().map(|x| x.normal()).unwrap_or_default());
 
-        let Some(other_normal) = other.faces().next().map(|x| x.normal_at_center()) else {
-            return Ok(false);
-        };
+        let delta_norms = other_normal - self_normal;
 
-        let delta_norms = other_normal.into_inner() - self_normal.into_inner();
-        let inv_delta_norms = other_normal.into_inner() - -(self_normal.into_inner());
-
-        if delta_norms.abs().max() > tolerance && inv_delta_norms.abs().max() > tolerance {
+        if delta_norms.abs().max() > tolerance {
             return Ok(false);
         }
 
-        let mut self_shrink_transform = ffi::new_transform();
-        self_shrink_transform.pin_mut().SetScale(&point_to_gppnt(self_com), 1.0 - tolerance);
-        let mut self_grow_transform = ffi::new_transform();
-        self_grow_transform.pin_mut().SetScale(&point_to_gppnt(other_com), 1.0 + tolerance);
-        let mut other_shrink_transform = ffi::new_transform();
-        other_shrink_transform.pin_mut().SetScale(&point_to_gppnt(other_com), 1.0 - tolerance);
-        let mut other_grow_transform = ffi::new_transform();
-        other_grow_transform.pin_mut().SetScale(&point_to_gppnt(self_com), 1.0 + tolerance);
-        
-        let transforms = [
-            (self_shrink_transform, other_grow_transform),
-            (self_grow_transform, other_shrink_transform)
-        ];
+        self.calculate_mesh(mesh_tolerance)?;
+        other.calculate_mesh(mesh_tolerance)?;
 
-        let mut overlaps = true;
-
-        for (self_transform, other_transform) in transforms {
-            overlaps &= self.clone().overlap_with_transforms(&other.clone(), mesh_tolerance, &self_transform, &other_transform)?;
-
-            if !overlaps {
-                break;
-            }
-        }
-
-
-        Ok(overlaps)
-    }
-
-    fn overlap_with_transforms(&self, other: &Self, mesh_tolerance: f64, self_transform: &ffi::gp_Trsf, other_transform: &ffi::gp_Trsf) -> Result<bool, Error> {
-        let mut self_transformer = ffi::BRepBuilderAPI_Transform_ctor(&self.inner, self_transform, false);
-        let mut other_transformer = ffi::BRepBuilderAPI_Transform_ctor(&other.inner, other_transform, true);
-
-        let ov_self = Shape::from_shape(self_transformer.pin_mut().Shape());
-        let ov_other = Shape::from_shape(other_transformer.pin_mut().Shape());
-
-        ov_self.calculate_mesh(mesh_tolerance)?;
-        ov_other.calculate_mesh(mesh_tolerance)?;
-
-        let mut shape_prox = ffi::BRepExtrema_ShapeProximity(&ov_self.inner, &ov_other.inner, 0.0);
+        let mut shape_prox = ffi::BRepExtrema_ShapeProximity(&self.inner, &other.inner, 0.0);
 
         shape_prox.pin_mut().Perform();
 

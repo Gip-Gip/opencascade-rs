@@ -1017,6 +1017,8 @@ pub mod ffi {
         pub fn Y(self: &gp_Dir) -> f64;
         pub fn Z(self: &gp_Dir) -> f64;
 
+        pub fn CalculateFaceNormalPlease(face: &TopoDS_Face) -> UniquePtr<gp_Dir>;
+
         #[cxx_name = "construct_unique"]
         pub fn gp_Ax1_ctor(origin: &gp_Pnt, main_dir: &gp_Dir) -> UniquePtr<gp_Ax1>;
 

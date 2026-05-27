@@ -59,6 +59,7 @@
 #include <Geom_Plane.hxx>
 #include <Geom_Surface.hxx>
 #include <Geom_TrimmedCurve.hxx>
+#include <GeomLProp_SLProps.hxx>
 #include <IGESControl_Reader.hxx>
 #include <IGESControl_Writer.hxx>
 #include <Law_Function.hxx>
@@ -555,4 +556,16 @@ inline void BRepBndLib_Add(const TopoDS_Shape &shape, Bnd_Box &box, const Standa
 
 inline size_t BRepExtrema_ShapeProximity_OverlapCount(const BRepExtrema_ShapeProximity &shape_prox) {
     return shape_prox.OverlapSubShapes1().Size();
+}
+
+// Copy and pasted from from https://dev.opencascade.org/node/75681#comment-8102
+std::unique_ptr<gp_Dir> CalculateFaceNormalPlease(const TopoDS_Face &face)
+{
+    Standard_Real umin, umax, vmin, vmax;
+    BRepTools::UVBounds(face, umin, umax, vmin, vmax);
+    Handle(Geom_Surface) surf=BRep_Tool::Surface(face);
+    GeomLProp_SLProps props(surf, umin, vmin, 1, 0.01); // The docs page for this 404's, i sure hope it's not being depreciated in the future...
+    gp_Dir norm=props.Normal();
+    if(face.Orientation()==TopAbs_REVERSED) norm.Reverse();
+    return std::unique_ptr<gp_Dir>(new gp_Dir(norm));
 }
