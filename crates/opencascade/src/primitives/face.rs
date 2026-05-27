@@ -423,6 +423,14 @@ impl Face {
     }
 }
 
+impl From<&Shape> for Face {
+    fn from(value: &Shape) -> Self {
+        let face = ffi::TopoDS_cast_to_face(&value.inner);
+
+        Face::from_face(face)
+    }
+}
+
 pub struct CompoundFace {
     pub inner: UniquePtr<ffi::TopoDS_Compound>,
 }
