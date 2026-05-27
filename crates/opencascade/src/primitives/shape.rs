@@ -910,7 +910,10 @@ impl Shape {
         self.calculate_mesh(mesh_tolerance)?;
         other.calculate_mesh(mesh_tolerance)?;
 
-        let mut shape_prox = ffi::BRepExtrema_ShapeProximity(&self.inner, &other.inner, 0.0);
+        let tolerance_mult = self.center_of_mass().coords.abs().max().max(other.center_of_mass().coords.abs().max());
+        let postmult_tolerance = tolerance * tolerance_mult;
+
+        let mut shape_prox = ffi::BRepExtrema_ShapeProximity(&self.inner, &other.inner, postmult_tolerance);
 
         shape_prox.pin_mut().Perform();
 
