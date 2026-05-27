@@ -1,7 +1,6 @@
 use crate::angle::Angle;
 use crate::law_function::law_function_from_graph;
 use crate::make_pipe_shell::make_pipe_shell_with_law_function;
-use crate::primitives::WireIterator;
 use crate::primitives::make_axis_1;
 use crate::primitives::make_point;
 use crate::primitives::make_vec;
@@ -11,6 +10,7 @@ use crate::primitives::Shape;
 use crate::primitives::Solid;
 use crate::primitives::Surface;
 use crate::primitives::Wire;
+use crate::primitives::WireIterator;
 use crate::workplane::Workplane;
 use crate::Error;
 use crate::TandR;
@@ -87,16 +87,18 @@ impl Face {
 
         loft_builder.pin_mut().AddWire(&start_wire.inner);
         loft_builder.pin_mut().AddWire(&end_wire.inner);
-        
-        loft_builder.pin_mut().Build(&ffi::Message_ProgressRange_ctor());
-        
+
+        loft_builder
+            .pin_mut()
+            .Build(&ffi::Message_ProgressRange_ctor());
+
         if !loft_builder.IsDone() {
             return Err(Error::NotDone);
         }
 
         let shape = loft_builder.pin_mut().Shape();
         let solid = ffi::TopoDS_cast_to_solid(shape);
-        
+
         Ok(Solid::from_solid(solid))
     }
 

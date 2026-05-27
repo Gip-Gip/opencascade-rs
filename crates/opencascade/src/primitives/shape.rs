@@ -1,9 +1,7 @@
 use crate::mesh;
-use crate::point_to_gppnt;
-use crate::TandR;
-use crate::TopExpExplorerIter;
 use crate::mesh::Mesh;
 use crate::mesh::Mesher;
+use crate::point_to_gppnt;
 use crate::primitives::make_axis_1;
 use crate::primitives::make_axis_2;
 use crate::primitives::make_dir;
@@ -26,10 +24,12 @@ use crate::primitives::VertexIterator;
 use crate::primitives::Wire;
 use crate::primitives::WireIterator;
 use crate::Error;
+use crate::TandR;
+use crate::TopExpExplorerIter;
 use cxx::UniquePtr;
-use nalgebra::UnitVector3;
 use nalgebra::point;
 use nalgebra::Point3;
+use nalgebra::UnitVector3;
 use nalgebra::Vector3;
 use opencascade_sys::ffi;
 use opencascade_sys::ffi::TopAbs_ShapeEnum;
@@ -859,20 +859,24 @@ impl Shape {
         self.inner = inner;
     }
 
-    pub fn distance_between(&self, other: &Shape) -> Result<Option<f64>, Error> { 
+    pub fn distance_between(&self, other: &Shape) -> Result<Option<f64>, Error> {
         let mut dist_shape_shape = ffi::BRepExtrema_DistShapeShape(
             &self.inner,
             &other.inner,
             ffi::Extrema_ExtFlag::Extrema_ExtFlag_MINMAX,
-            ffi::Extrema_ExtAlgo::Extrema_ExtAlgo_Tree, 
-            &ffi::Message_ProgressRange_ctor());
+            ffi::Extrema_ExtAlgo::Extrema_ExtAlgo_Tree,
+            &ffi::Message_ProgressRange_ctor(),
+        );
 
-        if !dist_shape_shape.pin_mut().Perform(&ffi::Message_ProgressRange_ctor()) {
+        if !dist_shape_shape
+            .pin_mut()
+            .Perform(&ffi::Message_ProgressRange_ctor())
+        {
             return Err(Error::NotDone);
         }
 
         if dist_shape_shape.NbSolution() == 0 {
-            return Ok(None)
+            return Ok(None);
         }
 
         // whoever made this one-indexed, I hope you trip and fall and bruise your knee
@@ -883,10 +887,19 @@ impl Shape {
     }
 
     // Slow as cheeks. !TODO! make this not slow as cheeks
-    pub fn overlaps(&self, other: &Shape, mesh_tolerance: f64, tolerance: f64, self_normal_override: Option<Vector3<f64>>, other_normal_override: Option<Vector3<f64>>) -> Result<bool, Error> {
-        let self_normal = self_normal_override.unwrap_or_else(|| self.faces().next().map(|x| x.normal()).unwrap_or_default());
+    pub fn overlaps(
+        &self,
+        other: &Shape,
+        mesh_tolerance: f64,
+        tolerance: f64,
+        self_normal_override: Option<Vector3<f64>>,
+        other_normal_override: Option<Vector3<f64>>,
+    ) -> Result<bool, Error> {
+        let self_normal = self_normal_override
+            .unwrap_or_else(|| self.faces().next().map(|x| x.normal()).unwrap_or_default());
 
-        let other_normal = other_normal_override.unwrap_or_else(|| other.faces().next().map(|x| x.normal()).unwrap_or_default());
+        let other_normal = other_normal_override
+            .unwrap_or_else(|| other.faces().next().map(|x| x.normal()).unwrap_or_default());
 
         let delta_norms = other_normal - self_normal;
 
@@ -929,7 +942,6 @@ impl Shape {
         let shape = &self.inner;
 
         self.inner = tandr.transform_shape(shape);
-
     }
 }
 

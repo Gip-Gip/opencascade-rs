@@ -69,7 +69,7 @@ pub mod ffi {
         Extrema_ExtFlag_MAX,
         Extrema_ExtFlag_MINMAX,
     }
-    
+
     #[repr(u32)]
     #[derive(Debug)]
     pub enum Extrema_ExtAlgo {
@@ -624,14 +624,22 @@ pub mod ffi {
         pub fn LastParameter(self: &BRepAdaptor_Curve) -> f64;
         pub fn BRepAdaptor_Curve_value(curve: &BRepAdaptor_Curve, u: f64) -> UniquePtr<gp_Pnt>;
         pub fn GetType(self: &BRepAdaptor_Curve) -> GeomAbs_CurveType;
-    
+
         type Extrema_ExtFlag;
         type Extrema_ExtAlgo;
         type BRepExtrema_DistShapeShape;
         #[cxx_name = "construct_unique"]
-
-        pub fn BRepExtrema_DistShapeShape(shape_1: &TopoDS_Shape, shape_2: &TopoDS_Shape, extflag: Extrema_ExtFlag, extalgo: Extrema_ExtAlgo, progress: &Message_ProgressRange) -> UniquePtr<BRepExtrema_DistShapeShape>;
-        pub fn Perform(self: Pin<&mut BRepExtrema_DistShapeShape>, progress: &Message_ProgressRange) -> bool;
+        pub fn BRepExtrema_DistShapeShape(
+            shape_1: &TopoDS_Shape,
+            shape_2: &TopoDS_Shape,
+            extflag: Extrema_ExtFlag,
+            extalgo: Extrema_ExtAlgo,
+            progress: &Message_ProgressRange,
+        ) -> UniquePtr<BRepExtrema_DistShapeShape>;
+        pub fn Perform(
+            self: Pin<&mut BRepExtrema_DistShapeShape>,
+            progress: &Message_ProgressRange,
+        ) -> bool;
         pub fn PointOnShape1(self: &BRepExtrema_DistShapeShape, i_point: i32) -> &gp_Pnt;
         pub fn PointOnShape2(self: &BRepExtrema_DistShapeShape, i_point: i32) -> &gp_Pnt;
         pub fn NbSolution(self: &BRepExtrema_DistShapeShape) -> i32;
@@ -640,11 +648,17 @@ pub mod ffi {
         type BRepExtrema_ShapeProximity;
 
         #[cxx_name = "construct_unique"]
-        pub fn BRepExtrema_ShapeProximity(shape_1: &TopoDS_Shape, shape_2: &TopoDS_Shape, tolerance: f64) -> UniquePtr<BRepExtrema_ShapeProximity>;
+        pub fn BRepExtrema_ShapeProximity(
+            shape_1: &TopoDS_Shape,
+            shape_2: &TopoDS_Shape,
+            tolerance: f64,
+        ) -> UniquePtr<BRepExtrema_ShapeProximity>;
         pub fn Perform(self: Pin<&mut BRepExtrema_ShapeProximity>);
         pub fn IsDone(self: &BRepExtrema_ShapeProximity) -> bool;
-        pub fn BRepExtrema_ShapeProximity_OverlapCount(shape_prox: &BRepExtrema_ShapeProximity) -> usize;
-        
+        pub fn BRepExtrema_ShapeProximity_OverlapCount(
+            shape_prox: &BRepExtrema_ShapeProximity,
+        ) -> usize;
+
         // Primitives
         type BRepPrimAPI_MakePrism;
 
