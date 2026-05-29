@@ -910,7 +910,7 @@ impl Shape {
         self.calculate_mesh(mesh_tolerance)?;
         other.calculate_mesh(mesh_tolerance)?;
 
-        let tolerance_mult = self.center_of_mass().coords.abs().max().max(other.center_of_mass().coords.abs().max());
+        let tolerance_mult = self.center_of_mass().coords.abs().max().max(other.center_of_mass().coords.abs().max()) + 1.0;
         let postmult_tolerance = tolerance * tolerance_mult;
 
         let mut shape_prox = ffi::BRepExtrema_ShapeProximity(&self.inner, &other.inner, postmult_tolerance);
@@ -930,6 +930,26 @@ impl Shape {
 
         Ok(overlaps)
     }
+    
+    //pub fn normal(&self, mesh_tolerance: f64) -> Result<Vector3<f64>, Error> {
+    //    let mesh = self.mesh_with_tolerance(mesh_tolerance)?;
+
+    //    let i1 = mesh.indices[0];
+    //    let i2 = mesh.indices[1];
+    //    let i3 = mesh.indices[2];
+
+    //    let vertex_1 = mesh.vertices[i1];
+    //    let vertex_2 = mesh.vertices[i2];
+    //    let vertex_3 = mesh.vertices[i3];
+
+
+    //    let edge_1 = vertex_2 - vertex_1;
+    //    let edge_2 = vertex_3 - vertex_1;
+
+    //    let normal = edge_1.cross(&edge_2).normalize();
+
+    //    Ok(normal)
+    //}
 
     pub fn center_of_mass(&self) -> Point3<f64> {
         let mut props = ffi::GProp_GProps_ctor();
