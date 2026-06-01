@@ -27,6 +27,7 @@ use crate::Error;
 use crate::TandR;
 use crate::TopExpExplorerIter;
 use cxx::UniquePtr;
+use nalgebra::Matrix4;
 use nalgebra::point;
 use nalgebra::Point3;
 use nalgebra::UnitVector3;
@@ -965,6 +966,18 @@ impl Shape {
         let shape = &self.inner;
 
         self.inner = tandr.transform_shape(shape);
+    }
+
+    pub fn transform_affine(&mut self, matrix: &Matrix4<f64>) {
+        let mut transform: UniquePtr<ffi::gp_Trsf> = ffi::new_transform();
+
+        transform.pin_mut().SetValues(matrix.m11, matrix.m12, matrix.m13, matrix.m14, matrix.m21, matrix.m22, matrix.m23, matrix.m24, matrix.m31, matrix.m32, matrix.m33, matrix.m34);
+ 
+        let mut transformer = ffi::BRepBuilderAPI_Transform_ctor(&self.inner, &transform, false);
+
+        let new_shape = transformer.pin_mut().Shape();
+
+        self.inner = ffi::TopoDS_Shape_to_owned(new_shape)
     }
 }
 
