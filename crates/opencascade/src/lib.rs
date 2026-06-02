@@ -4,6 +4,7 @@ use crate::primitives::Edge;
 use crate::primitives::Shape;
 use crate::primitives::Wire;
 use cxx::UniquePtr;
+use nalgebra::Matrix4;
 use nalgebra::point;
 use nalgebra::vector;
 use nalgebra::Point2;
@@ -288,5 +289,19 @@ impl From<&TandR<f64>> for UniquePtr<gp_Trsf> {
         }
 
         occ_transform
+    }
+}
+
+impl<F: Scalar + RealField + Clone + Copy + From<f32>> From<TandR<F>> for Matrix4<F> {
+    fn from(value: TandR<F>) -> Self {
+        let translation = Matrix4::new_translation(&value.translation);
+        let rotation = Matrix4::from(value.rotation_quat);
+        
+        let is_inverse = value.inverse;
+
+        match is_inverse {
+            true => rotation * translation,
+            false => translation * rotation,
+        }
     }
 }
