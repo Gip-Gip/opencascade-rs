@@ -233,6 +233,18 @@ inline std::unique_ptr<gp_Pnt> BRepAdaptor_Curve_value(const BRepAdaptor_Curve &
   return std::unique_ptr<gp_Pnt>(new gp_Pnt(curve.Value(U)));
 }
 
+inline std::unique_ptr<gp_Circ> GetCircle(const BRepAdaptor_Curve &curve) {
+    return std::unique_ptr<gp_Circ>(new gp_Circ(curve.Circle()));
+}
+
+inline std::unique_ptr<gp_Ax1> GetAxis(const gp_Circ &circle) {
+    return std::unique_ptr<gp_Ax1>(new gp_Ax1(circle.Axis()));
+}
+
+inline std::unique_ptr<gp_Pnt> GetCenterpoint(const gp_Circ &circle) {
+    return std::unique_ptr<gp_Pnt>(new gp_Pnt(circle.Location()));
+}
+
 // BRepLib
 inline bool BRepLibBuildCurves3d(const TopoDS_Shape &shape) { return BRepLib::BuildCurves3d(shape); }
 

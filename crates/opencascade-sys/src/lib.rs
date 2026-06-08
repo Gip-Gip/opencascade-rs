@@ -418,6 +418,8 @@ pub mod ffi {
 
         #[cxx_name = "construct_unique"]
         pub fn gp_Circ_ctor(axis: &gp_Ax2, radius: f64) -> UniquePtr<gp_Circ>;
+        pub fn GetAxis(circle: &gp_Circ) -> UniquePtr<gp_Ax1>;
+        pub fn GetCenterpoint(circle: &gp_Circ) -> UniquePtr<gp_Pnt>;
 
         // Shapes
         type TopoDS_Vertex;
@@ -624,6 +626,7 @@ pub mod ffi {
         pub fn LastParameter(self: &BRepAdaptor_Curve) -> f64;
         pub fn BRepAdaptor_Curve_value(curve: &BRepAdaptor_Curve, u: f64) -> UniquePtr<gp_Pnt>;
         pub fn GetType(self: &BRepAdaptor_Curve) -> GeomAbs_CurveType;
+        pub fn GetCircle(curve: &BRepAdaptor_Curve) -> UniquePtr<gp_Circ>;
 
         type Extrema_ExtFlag;
         type Extrema_ExtAlgo;
@@ -1024,6 +1027,8 @@ pub mod ffi {
         pub fn gp_OY() -> &'static gp_Ax1;
         pub fn gp_OZ() -> &'static gp_Ax1;
         pub fn gp_DZ() -> &'static gp_Dir;
+
+        pub fn Direction(self: &gp_Ax1) -> &gp_Dir;
 
         pub fn Transform(self: Pin<&mut gp_Dir>, transform: &gp_Trsf);
 

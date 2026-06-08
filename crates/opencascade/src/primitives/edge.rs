@@ -6,6 +6,7 @@ use nalgebra::point;
 use nalgebra::Point3;
 use nalgebra::UnitVector3;
 use nalgebra::Vector3;
+use nalgebra::vector;
 use opencascade_sys::ffi;
 
 use super::make_vec;
@@ -184,6 +185,20 @@ impl Edge {
         let curve = ffi::BRepAdaptor_Curve_ctor(&self.inner);
 
         EdgeType::from(curve.GetType())
+    }
+
+    pub fn centerpoint_axis(&self) -> Option<(Point3<f64>, Vector3<f64>)> {
+        if self.edge_type() != EdgeType::Circle {
+            return None;
+        }
+
+        let curve = ffi::BRepAdaptor_Curve_ctor(&self.inner);
+        let circle = ffi::GetCircle(&curve);
+        let centerpoint = ffi::GetCenterpoint(&circle);
+        let axis = ffi::GetAxis(&circle);
+        let axis_norm = axis.Direction();
+
+        Some((point![centerpoint.X(), centerpoint.Y(), centerpoint.Z()], vector![axis_norm.X(), axis_norm.Y(), axis_norm.Z()]))
     }
 }
 
