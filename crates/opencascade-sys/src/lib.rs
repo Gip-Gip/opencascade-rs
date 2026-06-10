@@ -146,6 +146,8 @@ pub mod ffi {
 
         pub fn HandleGeomCurve_Value(curve: &HandleGeomCurve, u: f64) -> UniquePtr<gp_Pnt>;
 
+        type Adaptor3d_Curve;
+
         // Collections
         type TopTools_ListOfShape;
 
@@ -420,6 +422,7 @@ pub mod ffi {
         pub fn gp_Circ_ctor(axis: &gp_Ax2, radius: f64) -> UniquePtr<gp_Circ>;
         pub fn GetAxis(circle: &gp_Circ) -> UniquePtr<gp_Ax1>;
         pub fn GetCenterpoint(circle: &gp_Circ) -> UniquePtr<gp_Pnt>;
+        pub fn Radius(self: &gp_Circ) -> f64;
 
         // Shapes
         type TopoDS_Vertex;
@@ -1424,6 +1427,8 @@ pub mod ffi {
         ) -> UniquePtr<Poly_Connect>;
 
         pub fn compute_normals(face: &TopoDS_Face, triangulation: &HandlePoly_Triangulation);
+
+        pub fn EdgeLength(curve: &BRepAdaptor_Curve) -> f64;
 
         // Edge approximation
         type GCPnts_TangentialDeflection;

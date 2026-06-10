@@ -1,4 +1,5 @@
 #include "rust/cxx.h"
+#include <Adaptor3d_Curve.hxx>
 #include <BOPAlgo_GlueEnum.hxx>
 #include <BRepAdaptor_Curve.hxx>
 #include <BRepAlgoAPI_Common.hxx>
@@ -43,6 +44,7 @@
 #include <BRepTools.hxx>
 #include <BRepTools_WireExplorer.hxx>
 #include <GCE2d_MakeSegment.hxx>
+#include <GCPnts_AbscissaPoint.hxx>
 #include <GCPnts_TangentialDeflection.hxx>
 #include <GC_MakeArcOfCircle.hxx>
 #include <GC_MakeSegment.hxx>
@@ -580,4 +582,8 @@ std::unique_ptr<gp_Dir> CalculateFaceNormalPlease(const TopoDS_Face &face)
     gp_Dir norm=props.Normal();
     if(face.Orientation()==TopAbs_REVERSED) norm.Reverse();
     return std::unique_ptr<gp_Dir>(new gp_Dir(norm));
+}
+
+static double EdgeLength(const BRepAdaptor_Curve &theC) {
+    return GCPnts_AbscissaPoint::Length(theC);
 }

@@ -187,7 +187,7 @@ impl Edge {
         EdgeType::from(curve.GetType())
     }
 
-    pub fn centerpoint_axis(&self) -> Option<(Point3<f64>, Vector3<f64>)> {
+    pub fn centerpoint_axis_radius(&self) -> Option<(Point3<f64>, Vector3<f64>, f64)> {
         if self.edge_type() != EdgeType::Circle {
             return None;
         }
@@ -197,8 +197,14 @@ impl Edge {
         let centerpoint = ffi::GetCenterpoint(&circle);
         let axis = ffi::GetAxis(&circle);
         let axis_norm = axis.Direction();
+        let radius = circle.Radius();
 
-        Some((point![centerpoint.X(), centerpoint.Y(), centerpoint.Z()], vector![axis_norm.X(), axis_norm.Y(), axis_norm.Z()]))
+        Some((point![centerpoint.X(), centerpoint.Y(), centerpoint.Z()], vector![axis_norm.X(), axis_norm.Y(), axis_norm.Z()], radius))
+    }
+
+    pub fn length(&self) -> f64 {
+        let adaptor_curve = ffi::BRepAdaptor_Curve_ctor(&self.inner);
+        ffi::EdgeLength(&adaptor_curve)
     }
 }
 
