@@ -550,21 +550,14 @@ impl Shape {
     }
 
     #[must_use]
-    pub fn subtract(&self, other: &Shape) -> BooleanShape {
+    pub fn subtract(&self, other: &Self) -> Result<Self, Error> {
         let mut cut_operation = ffi::BRepAlgoAPI_Cut_ctor(&self.inner, &other.inner);
 
-        let edge_list = cut_operation.pin_mut().SectionEdges();
-        let vec = ffi::shape_list_to_vector(edge_list);
-
-        let mut new_edges = vec![];
-        for shape in vec.iter() {
-            let edge = ffi::TopoDS_cast_to_edge(shape);
-            new_edges.push(Edge::from_edge(edge));
+        if !cut_operation.IsDone() {
+            return Err(Error::NotDone);
         }
 
-        let shape = Self::from_shape(cut_operation.pin_mut().Shape());
-
-        BooleanShape { shape, new_edges }
+        Ok(Shape::from_shape(cut_operation.pin_mut().Shape()))
     }
 
     pub fn read_step(path: impl AsRef<Path>) -> Result<Self, Error> {
