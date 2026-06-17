@@ -129,6 +129,13 @@ impl OcctConfig {
                 }
             }
         }
+        
+        println!("OCC Found:\n\tVERSION_MAJOR: {:?}\n\tVERSION_MINOR: {:?}\n\tINCLUDE_DIR: {:?}\n\tLIBRARY_DIR: {:?}\n\tBUILD_SHARED_LIBS: {}",
+            version_major,
+            version_minor,
+            include_dir,
+            library_dir,
+            is_dynamic);
 
         if let (Some(version_major), Some(version_minor), Some(include_dir), Some(library_dir)) =
             (version_major, version_minor, include_dir, library_dir)
