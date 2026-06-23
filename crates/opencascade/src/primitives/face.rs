@@ -486,7 +486,7 @@ impl CompoundFace {
     }
 
     #[must_use]
-    pub fn extrude(&self, dir: Vector3<f64>) -> Shape {
+    pub fn extrude(&self, dir: Vector3<f64>) -> Result<Shape, Error> {
         let prism_vec = make_vec(dir);
 
         let copy = false;
@@ -496,9 +496,14 @@ impl CompoundFace {
 
         let mut make_solid =
             ffi::BRepPrimAPI_MakePrism_ctor(inner_shape, &prism_vec, copy, canonize);
+
+        if !make_solid.IsDone() {
+            return Err(Error::NotDone);
+        }
+
         let extruded_shape = make_solid.pin_mut().Shape();
 
-        Shape::from_shape(extruded_shape)
+        Ok(Shape::from_shape(extruded_shape))
     }
 
     #[must_use]
