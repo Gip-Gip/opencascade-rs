@@ -58,8 +58,6 @@ pub(crate) const X_NORMAL: UnitVector3<f64> = UnitVector3::new_unchecked(vector!
 pub(crate) const Y_NORMAL: UnitVector3<f64> = UnitVector3::new_unchecked(vector![0.0, 1.0, 0.0]);
 pub(crate) const Z_NORMAL: UnitVector3<f64> = UnitVector3::new_unchecked(vector![0.0, 0.0, 1.0]);
 pub(crate) const BASE_NORMAL: UnitVector3<f64> = Z_NORMAL;
-pub(crate) static INTER_QUAT: LazyLock<UnitQuaternion<f64>> =
-    LazyLock::new(|| UnitQuaternion::rotation_between(&Z_NORMAL, &X_NORMAL).unwrap());
 
 pub struct TopExpExplorerIter {
     explorer: UniquePtr<ffi::TopExp_Explorer>,
@@ -159,10 +157,21 @@ impl<F: Scalar + RealField + Clone + Copy + From<f32>> TandR<F> {
         let rotation_quat = match UnitQuaternion::rotation_between(a, b) {
             Some(quat) => quat,
             None => {
-                let quat_1 = INTER_QUAT.cast();
-                let inter_norm = quat_1 * a;
+                let norms: [UnitVector3<F>; 3] = [X_NORMAL.cast(), Y_NORMAL.cast(), Z_NORMAL.cast()];
+                let mut norm_iter = norms.into_iter();
+                let quat_2;
+                let mut inter_norm;
 
-                let quat_2 = UnitQuaternion::rotation_between(&inter_norm, b).unwrap();
+                loop {
+                    inter_norm = norm_iter.next().unwrap();
+
+                    if let Some(quat) = UnitQuaternion::rotation_between(&inter_norm, b) {
+                        quat_2 = quat;
+                        break;
+                    }
+                }
+
+                let quat_1 = UnitQuaternion::rotation_between(a, &inter_norm).unwrap();
 
                 quat_2 * quat_1
             }
