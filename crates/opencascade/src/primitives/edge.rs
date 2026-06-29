@@ -1,6 +1,7 @@
 use crate::primitives::make_axis_2;
 use crate::primitives::make_point;
 use crate::primitives::Shape;
+use crate::primitives::VertexIterator;
 use cxx::UniquePtr;
 use nalgebra::point;
 use nalgebra::Point3;
@@ -205,6 +206,12 @@ impl Edge {
     pub fn length(&self) -> f64 {
         let adaptor_curve = ffi::BRepAdaptor_Curve_ctor(&self.inner);
         ffi::EdgeLength(&adaptor_curve)
+    }
+
+    pub fn vertices(&self) -> VertexIterator {
+        let shape: Shape = self.into();
+
+        VertexIterator::new(&shape)
     }
 }
 
