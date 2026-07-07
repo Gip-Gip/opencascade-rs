@@ -1,7 +1,5 @@
-use crate::mesh;
 use crate::mesh::Mesh;
 use crate::mesh::Mesher;
-use crate::point_to_gppnt;
 use crate::primitives::make_axis_1;
 use crate::primitives::make_axis_2;
 use crate::primitives::make_dir;
@@ -30,7 +28,6 @@ use cxx::UniquePtr;
 use nalgebra::Matrix4;
 use nalgebra::point;
 use nalgebra::Point3;
-use nalgebra::UnitVector3;
 use nalgebra::Vector3;
 use opencascade_sys::ffi;
 use opencascade_sys::ffi::TopAbs_ShapeEnum;
@@ -916,11 +913,7 @@ impl Shape {
             return Ok(false);
         }
 
-        let overlaps = if ffi::BRepExtrema_ShapeProximity_OverlapCount(&shape_prox) > 0 {
-            true
-        } else {
-            false
-        };
+        let overlaps = ffi::BRepExtrema_ShapeProximity_OverlapCount(&shape_prox) > 0;
 
         Ok(overlaps)
     }

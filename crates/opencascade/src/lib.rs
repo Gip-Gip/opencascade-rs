@@ -1,4 +1,3 @@
-use std::sync::LazyLock;
 
 use crate::primitives::Edge;
 use crate::primitives::Shape;

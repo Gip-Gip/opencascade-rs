@@ -460,7 +460,7 @@ impl Clone for CompoundFace {
     fn clone(&self) -> Self {
         let shape = ffi::cast_compound_to_shape(&self.inner);
 
-        let mut copier = ffi::BRepBuilderAPI_Copy_new(&shape, true, false);
+        let mut copier = ffi::BRepBuilderAPI_Copy_new(shape, true, false);
 
         let new_shape = copier.pin_mut().Shape();
 
