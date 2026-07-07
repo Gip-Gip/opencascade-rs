@@ -1,11 +1,10 @@
-
 use crate::primitives::Edge;
 use crate::primitives::Shape;
 use crate::primitives::Wire;
 use cxx::UniquePtr;
-use nalgebra::Matrix4;
 use nalgebra::point;
 use nalgebra::vector;
+use nalgebra::Matrix4;
 use nalgebra::Point2;
 use nalgebra::Point3;
 use nalgebra::RealField;
@@ -156,7 +155,8 @@ impl<F: Scalar + RealField + Clone + Copy + From<f32>> TandR<F> {
         let rotation_quat = match UnitQuaternion::rotation_between(a, b) {
             Some(quat) => quat,
             None => {
-                let norms: [UnitVector3<F>; 3] = [X_NORMAL.cast(), Y_NORMAL.cast(), Z_NORMAL.cast()];
+                let norms: [UnitVector3<F>; 3] =
+                    [X_NORMAL.cast(), Y_NORMAL.cast(), Z_NORMAL.cast()];
                 let mut norm_iter = norms.into_iter();
                 let quat_2;
                 let mut inter_norm;
@@ -304,7 +304,7 @@ impl<F: Scalar + RealField + Clone + Copy + From<f32>> From<TandR<F>> for Matrix
     fn from(value: TandR<F>) -> Self {
         let translation = Matrix4::new_translation(&value.translation);
         let rotation = Matrix4::from(value.rotation_quat);
-        
+
         let is_inverse = value.inverse;
 
         match is_inverse {

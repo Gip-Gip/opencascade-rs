@@ -4,10 +4,10 @@ use crate::primitives::Shape;
 use crate::primitives::VertexIterator;
 use cxx::UniquePtr;
 use nalgebra::point;
+use nalgebra::vector;
 use nalgebra::Point3;
 use nalgebra::UnitVector3;
 use nalgebra::Vector3;
-use nalgebra::vector;
 use opencascade_sys::ffi;
 
 use super::make_vec;
@@ -200,7 +200,11 @@ impl Edge {
         let axis_norm = axis.Direction();
         let radius = circle.Radius();
 
-        Some((point![centerpoint.X(), centerpoint.Y(), centerpoint.Z()], vector![axis_norm.X(), axis_norm.Y(), axis_norm.Z()], radius))
+        Some((
+            point![centerpoint.X(), centerpoint.Y(), centerpoint.Z()],
+            vector![axis_norm.X(), axis_norm.Y(), axis_norm.Z()],
+            radius,
+        ))
     }
 
     pub fn length(&self) -> f64 {

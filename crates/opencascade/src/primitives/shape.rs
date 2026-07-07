@@ -25,8 +25,8 @@ use crate::Error;
 use crate::TandR;
 use crate::TopExpExplorerIter;
 use cxx::UniquePtr;
-use nalgebra::Matrix4;
 use nalgebra::point;
+use nalgebra::Matrix4;
 use nalgebra::Point3;
 use nalgebra::Vector3;
 use opencascade_sys::ffi;
@@ -901,10 +901,17 @@ impl Shape {
         self.calculate_mesh(mesh_tolerance)?;
         other.calculate_mesh(mesh_tolerance)?;
 
-        let tolerance_mult = self.center_of_mass().coords.abs().max().max(other.center_of_mass().coords.abs().max()) + 1.0;
+        let tolerance_mult = self
+            .center_of_mass()
+            .coords
+            .abs()
+            .max()
+            .max(other.center_of_mass().coords.abs().max())
+            + 1.0;
         let postmult_tolerance = tolerance * tolerance_mult;
 
-        let mut shape_prox = ffi::BRepExtrema_ShapeProximity(&self.inner, &other.inner, postmult_tolerance);
+        let mut shape_prox =
+            ffi::BRepExtrema_ShapeProximity(&self.inner, &other.inner, postmult_tolerance);
 
         shape_prox.pin_mut().Perform();
 
@@ -917,7 +924,7 @@ impl Shape {
 
         Ok(overlaps)
     }
-    
+
     //pub fn normal(&self, mesh_tolerance: f64) -> Result<Vector3<f64>, Error> {
     //    let mesh = self.mesh_with_tolerance(mesh_tolerance)?;
 
@@ -928,7 +935,6 @@ impl Shape {
     //    let vertex_1 = mesh.vertices[i1];
     //    let vertex_2 = mesh.vertices[i2];
     //    let vertex_3 = mesh.vertices[i3];
-
 
     //    let edge_1 = vertex_2 - vertex_1;
     //    let edge_2 = vertex_3 - vertex_1;
@@ -957,8 +963,11 @@ impl Shape {
     pub fn transform_affine(&mut self, matrix: &Matrix4<f64>) {
         let mut transform: UniquePtr<ffi::gp_Trsf> = ffi::new_transform();
 
-        transform.pin_mut().SetValues(matrix.m11, matrix.m12, matrix.m13, matrix.m14, matrix.m21, matrix.m22, matrix.m23, matrix.m24, matrix.m31, matrix.m32, matrix.m33, matrix.m34);
- 
+        transform.pin_mut().SetValues(
+            matrix.m11, matrix.m12, matrix.m13, matrix.m14, matrix.m21, matrix.m22, matrix.m23,
+            matrix.m24, matrix.m31, matrix.m32, matrix.m33, matrix.m34,
+        );
+
         let mut transformer = ffi::BRepBuilderAPI_Transform_ctor(&self.inner, &transform, false);
 
         let new_shape = transformer.pin_mut().Shape();

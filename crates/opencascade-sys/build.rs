@@ -129,7 +129,7 @@ impl OcctConfig {
                 }
             }
         }
-        
+
         println!("OCC Found:\n\tVERSION_MAJOR: {:?}\n\tVERSION_MINOR: {:?}\n\tINCLUDE_DIR: {:?}\n\tLIBRARY_DIR: {:?}\n\tBUILD_SHARED_LIBS: {}",
             version_major,
             version_minor,
