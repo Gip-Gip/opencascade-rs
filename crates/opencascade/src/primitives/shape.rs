@@ -886,6 +886,15 @@ impl Shape {
         self_normal_override: Option<Vector3<f64>>,
         other_normal_override: Option<Vector3<f64>>,
     ) -> Result<bool, Error> {
+        if let Some(self_face) = self.faces().next() && let Some(other_face) = other.faces().next() {
+            let self_surface = ffi::BRepAdaptor_Surface_ctor(&self_face.inner);
+            let other_surface = ffi::BRepAdaptor_Surface_ctor(&other_face.inner);
+
+            if self_surface.GetType() != other_surface.GetType() {
+                return Ok(false);
+            }
+        }
+
         let self_normal = self_normal_override
             .unwrap_or_else(|| self.faces().next().map(|x| x.normal()).unwrap_or_default());
 

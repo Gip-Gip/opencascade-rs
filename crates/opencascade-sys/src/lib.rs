@@ -77,6 +77,22 @@ pub mod ffi {
         Extrema_ExtAlgo_Tree,
     }
 
+    #[repr(u32)]
+    #[derive(Debug)]
+    pub enum GeomAbs_SurfaceType {
+        GeomAbs_Plane, 	
+        GeomAbs_Cylinder, 	
+        GeomAbs_Cone, 	
+        GeomAbs_Sphere, 	
+        GeomAbs_Torus, 	
+        GeomAbs_BezierSurface, 	
+        GeomAbs_BSplineSurface, 	
+        GeomAbs_SurfaceOfRevolution, 	
+        GeomAbs_SurfaceOfExtrusion, 	
+        GeomAbs_OffsetSurface, 	
+        GeomAbs_OtherSurface,
+    }
+
     unsafe extern "C++" {
         // https://github.com/dtolnay/cxx/issues/280
 
@@ -382,6 +398,9 @@ pub mod ffi {
         // Edge types
         type GeomAbs_CurveType;
 
+        // Surface types
+        type GeomAbs_SurfaceType;
+
         // Segments
         type GC_MakeSegment;
         type GCE2d_MakeSegment;
@@ -630,6 +649,11 @@ pub mod ffi {
         pub fn BRepAdaptor_Curve_value(curve: &BRepAdaptor_Curve, u: f64) -> UniquePtr<gp_Pnt>;
         pub fn GetType(self: &BRepAdaptor_Curve) -> GeomAbs_CurveType;
         pub fn GetCircle(curve: &BRepAdaptor_Curve) -> UniquePtr<gp_Circ>;
+
+        type BRepAdaptor_Surface;
+        #[cxx_name = "construct_unique"]
+        pub fn BRepAdaptor_Surface_ctor(face: &TopoDS_Face) -> UniquePtr<BRepAdaptor_Surface>;
+        pub fn GetType(self: &BRepAdaptor_Surface) -> GeomAbs_SurfaceType;
 
         type Extrema_ExtFlag;
         type Extrema_ExtAlgo;
