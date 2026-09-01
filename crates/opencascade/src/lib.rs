@@ -223,12 +223,17 @@ impl<F: Scalar + RealField + Clone + Copy + From<f32>> TandR<F> {
         let point3d = point![point.x, point.y, 0.0.into()];
         let new_point = self.transform_point(point3d);
 
-        point![new_point.x, new_point.y]
+        new_point.xy()
     }
 
     pub fn transform_tandr(&self, mut tandr: Self) -> Self {
-        tandr.rotation_quat = self.rotation_quat * tandr.rotation_quat;
-        tandr.translation = self.translation + (self.rotation_quat * tandr.translation);
+        if self.inverse {
+            tandr.rotation_quat = self.rotation_quat * tandr.rotation_quat;
+            tandr.translation = self.rotation_quat * (self.translation + tandr.translation);
+        } else {
+            tandr.rotation_quat = self.rotation_quat * tandr.rotation_quat;
+            tandr.translation = self.translation + (self.rotation_quat * tandr.translation);
+        }
 
         tandr
     }
@@ -310,6 +315,30 @@ impl<F: Scalar + RealField + Clone + Copy + From<f32>> From<TandR<F>> for Matrix
         match is_inverse {
             true => rotation * translation,
             false => translation * rotation,
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn tandr_reversability() {
+        for i_iter in 0..100 {
+            let translation_a = vector![rand::random_range(-10.0..10.0), rand::random_range(-10.0..10.0), rand::random_range(-10.0..10.0)];
+            let norm_a = UnitVector3::new_normalize(vector![rand::random_range(-10.0..10.0), rand::random_range(-10.0..10.0), rand::random_range(-10.0..10.0)]);
+            let translation_b = vector![rand::random_range(-10.0..10.0), rand::random_range(-10.0..10.0), rand::random_range(-10.0..10.0)];
+            let norm_b = UnitVector3::new_normalize(vector![rand::random_range(-10.0..10.0), rand::random_range(-10.0..10.0), rand::random_range(-10.0..10.0)]);
+
+            let tandr_a = TandR::from_rotation_between(&BASE_NORMAL, &norm_a).translation(translation_a);
+            let tandr_b = TandR::from_rotation_between(&BASE_NORMAL, &norm_b).translation(translation_b);
+            
+            let tandr_rel = tandr_a.inverse().transform_tandr(tandr_b);
+            let tandr_rel_b = tandr_a.transform_tandr(tandr_rel);
+
+            if (tandr_b.translation - tandr_rel_b.translation).magnitude() > 0.000_0001 || (tandr_b.rotation_quat.into_inner() - tandr_rel_b.rotation_quat.into_inner()).magnitude() > 0.000_0001 {
+                panic!("iteration: {}\ninitial: {:#?}\nrelative-to: {:#?}\nrelative: {:#?}\npost-relative: {:#?}", i_iter, tandr_b, tandr_a, tandr_rel, tandr_rel_b);
+            }
         }
     }
 }

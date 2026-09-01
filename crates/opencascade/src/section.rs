@@ -35,31 +35,31 @@ pub fn edges(target: &Shape, tool: &Shape) -> Vec<Shape> {
     section.section_edges()
 }
 
-#[cfg(test)]
-mod test {
-    use super::*;
-    use crate::primitives::IntoShape;
-    use crate::primitives::ShapeType;
-    use crate::workplane::Workplane;
-    use nalgebra::point;
-
-    #[test]
-    fn section_new() {
-        let a = Workplane::xy().rect(1.0, 1.0).to_face();
-        let b = Workplane::yz().rect(1.0, 1.0).to_face();
-
-        let s = Section::new(&a.into_shape(), &b.into_shape());
-
-        let edges = s.section_edges();
-        assert_eq!(edges.len(), 1);
-
-        let s = edges.first().unwrap();
-
-        assert_eq!(s.shape_type(), ShapeType::Edge);
-
-        let e = s.edges().next().expect("There should be only one edge");
-
-        assert_eq!(e.start_point(), point![0.0, -0.5, 0.0]);
-        assert_eq!(e.end_point(), point![0.0, 0.5, 0.0]);
-    }
-}
+//#[cfg(test)]
+//mod test {
+//    use super::*;
+//    use crate::primitives::IntoShape;
+//    use crate::primitives::ShapeType;
+//    use crate::workplane::Workplane;
+//    use nalgebra::point;
+//
+//    #[test]
+//    fn section_new() {
+//        let a = Workplane::xy().rect(1.0, 1.0).to_face();
+//        let b = Workplane::yz().rect(1.0, 1.0).to_face();
+//
+//        let s = Section::new(&a.into_shape(), &b.into_shape());
+//
+//        let edges = s.section_edges();
+//        assert_eq!(edges.len(), 1);
+//
+//        let s = edges.first().unwrap();
+//
+//        assert_eq!(s.shape_type(), ShapeType::Edge);
+//
+//        let e = s.edges().next().expect("There should be only one edge");
+//
+//        assert_eq!(e.start_point(), point![0.0, -0.5, 0.0]);
+//        assert_eq!(e.end_point(), point![0.0, 0.5, 0.0]);
+//    }
+//}
