@@ -38,6 +38,9 @@ pub struct Shape {
     pub(crate) inner: UniquePtr<ffi::TopoDS_Shape>,
 }
 
+unsafe impl Send for Shape {}
+unsafe impl Sync for Shape {}
+
 impl AsRef<Shape> for Shape {
     fn as_ref(&self) -> &Shape {
         self
